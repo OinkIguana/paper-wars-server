@@ -1,5 +1,5 @@
 use shared::{Id, Universe, Description};
-use warp::{path, reject::not_found, Filter};
+use warp::{path, Filter};
 use dotenv;
 use env_logger;
 
@@ -19,16 +19,27 @@ fn main() {
         .map(|universes| filters::cbor(&universes));
 
     let load_universe = path::param::<Id<Universe>>()
+        .and(path::end())
         .map(schema::load_universe)
         .and_then(|universe: Result<Universe, ()>| universe
             .as_ref()
             .map(filters::cbor)
-            .map_err(|_| not_found())
+            .map_err(|_| warp::reject::not_found())
         );
 
-    let universe = path!("universe").and(load_universe.or(list_all_universes));
+    let localize_universe = path::param::<Id<Universe>>()
+        .and(path!("localization" / String))
+        .map(schema::load_localization)
+        .map(|reply| warp::reply::with_header(reply, "Content-Type", "text/plain;charset=UTF-8"));
 
-    let routes = warp::get2().and(universe);
+    let universes = path!("universe")
+        .and(
+            localize_universe
+            .or(load_universe)
+            .or(list_all_universes)
+        );
+
+    let routes = warp::get2().and(universes);
 
     println!();
     println!("Server is listening on port {}", *env::PORT);

@@ -1,13 +1,18 @@
-use log::warn;
+use std::ffi::OsStr;
 use std::{fs, path::{Path, PathBuf}};
+use lazy_static::lazy_static;
+use log::warn;
 use toml;
 use serde::Deserialize;
 use shared::*;
 use crate::env;
 
 const DESC_FILE: &'static str = "description.toml";
+lazy_static! {
+    static ref FLUTTER_EXT: &'static OsStr = OsStr::new("ftl");
+}
 
-fn parse_toml<T, P>(path: P) -> Result<T, ()> 
+fn parse_toml<T, P>(path: P) -> Result<T, ()>
 where
     for<'de> T: Deserialize<'de>,
     P: AsRef<Path>,
@@ -31,7 +36,7 @@ where
         .filter_map(Result::ok)
 }
 
-pub fn load_description<T, P: AsRef<Path>>(path: P) -> Result<T, ()> 
+pub fn load_description<T, P: AsRef<Path>>(path: P) -> Result<T, ()>
 where for<'de> T: Deserialize<'de> {
     parse_toml(path.as_ref().join(DESC_FILE))
 }
@@ -68,4 +73,39 @@ pub fn load_universe(id: Id<Universe>) -> Result<Universe, ()> {
             .collect(),
         attributes: Vec::default(),
     })
+}
+
+pub fn load_localization(id: Id<Universe>, language: String) -> String {
+    let universe_directory = env::SCHEMA_DIR.join("universes").join(&id);
+    find_localization(&universe_directory, &language)
+        .map(fs::read_to_string)
+        .filter_map(Result::ok)
+        .collect()
+}
+
+fn find_localization<'a, P>(path: P, language: &'a str) -> impl Iterator<Item = PathBuf> + 'a
+where P: AsRef<Path> {
+    fs::read_dir(path.as_ref())
+        .map_err(|error| warn!("{:?}, {}", path.as_ref(), error))
+        .unwrap()
+        .filter_map(Result::ok)
+        .map(|entry| entry.path())
+        .flat_map(move |path| -> Box<dyn Iterator<Item = PathBuf>> {
+            if path.is_dir() {
+                Box::new(find_localization(path, language))
+            } else if
+                path.extension() == Some(&FLUTTER_EXT) &&
+                path.file_stem()
+                    .and_then(OsStr::to_str)
+                    .map(|name| language.starts_with(name))
+                    .unwrap_or(false)
+            {
+                // TODO: might want to make this smarter so it doesn't pick two matching languages
+                // from the same directory. The problem can be avoided by name files smartly, but
+                // still could make sense to improve
+                Box::new(vec![path].into_iter())
+            } else {
+                Box::new(std::iter::empty())
+            }
+        })
 }
