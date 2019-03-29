@@ -3,7 +3,6 @@ use std::{fs, path::{Path, PathBuf}};
 use toml;
 use serde::Deserialize;
 use shared::*;
-use shared::collections::KeyedMap;
 use crate::env;
 
 const DESC_FILE: &'static str = "description.toml";
@@ -13,8 +12,8 @@ where
     for<'de> T: Deserialize<'de>,
     P: AsRef<Path>,
 {
-    let contents = fs::read_to_string(path).map_err(|_| ())?;
-    toml::from_str(&contents).map_err(|error| warn!("{}", error))
+    let contents = fs::read_to_string(path.as_ref()).map_err(|error| warn!("{:?}: {}", path.as_ref(), error))?;
+    toml::from_str(&contents).map_err(|error| warn!("{:?}: {}", path.as_ref(), error))
 }
 
 pub fn load_directory<T, E, P, F>(path: P, loader: F) -> impl Iterator<Item = T>
@@ -23,7 +22,8 @@ where
     F: FnMut(PathBuf) -> Result<T, E>,
 {
     fs::read_dir(path.as_ref())
-        .expect("The directory must exist and be readable")
+        .map_err(|error| warn!("{:?}, {}", path.as_ref(), error))
+        .unwrap()
         .filter_map(Result::ok)
         .map(|entry| entry.path())
         .filter(|path| path.is_dir())
@@ -50,14 +50,22 @@ pub fn load_universe(id: Id<Universe>) -> Result<Universe, ()> {
         research: load_directory(universe_directory.join("research"), load_description)
             .collect(),
         unit_classes: load_directory(universe_directory.join("unit-classes"), load_description)
+            // TODO: parse attributes and add to classes
             .collect(),
         units: load_directory(universe_directory.join("unit-types"), load_description)
             .collect(),
-        modifier_classes: KeyedMap::default(),
-        modifiers: KeyedMap::default(),
-        tiles: KeyedMap::default(),
-        maps: KeyedMap::default(),
-        races: KeyedMap::default(),
+        modifier_classes: load_directory(universe_directory.join("modifier-classes"), load_description)
+            // TODO: parse attributes and add to classes
+            .collect(),
+        modifiers: load_directory(universe_directory.join("modifier-types"), load_description)
+            .collect(),
+        tiles: load_directory(universe_directory.join("tile-types"), load_description)
+            // TODO: parse attributes and add to classes
+            .collect(),
+        maps: load_directory(universe_directory.join("map-types"), load_description)
+            .collect(),
+        races: load_directory(universe_directory.join("races"), load_description)
+            .collect(),
         attributes: Vec::default(),
     })
 }
