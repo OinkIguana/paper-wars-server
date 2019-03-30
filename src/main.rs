@@ -32,14 +32,19 @@ fn main() {
         .map(schema::load_localization)
         .map(|reply| warp::reply::with_header(reply, "Content-Type", "text/plain;charset=UTF-8"));
 
-    let universes = path!("universe")
+    let universes = path("universe")
         .and(
             localize_universe
             .or(load_universe)
             .or(list_all_universes)
         );
 
-    let routes = warp::get2().and(universes);
+    let maker = path("maker")
+        .and(warp::fs::dir(&*env::MAKER_DIR));
+
+    let routes = warp::get2().and(universes.or(maker))
+        .or_else(|_| Err(warp::reject::not_found()))
+        .with(warp::filters::log::log("server"));
 
     println!();
     println!("Server is listening on port {}", *env::PORT);
