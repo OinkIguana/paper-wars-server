@@ -27,22 +27,23 @@ fn main() {
             .map_err(|_| warp::reject::not_found())
         );
 
-    let localize_universe = path::param::<Id<Universe>>()
-        .and(path!("localization" / String))
-        .map(schema::load_localization)
+    let localize = path("l10n")
+        .and(warp::filters::header::header("Accept-Language"))
+        .map(|language: String| accept_language::parse(&language))
+        .map(|languages: Vec<String>| schema::load_localization(&languages[0]))
+        .map(|ftl: String| filters::cbor(&ftl))
         .map(|reply| warp::reply::with_header(reply, "Content-Type", "text/plain;charset=UTF-8"));
 
     let universes = path("universe")
         .and(
-            localize_universe
-            .or(load_universe)
+            load_universe
             .or(list_all_universes)
         );
 
     let maker = path("maker")
         .and(warp::fs::dir(&*env::MAKER_DIR));
 
-    let routes = warp::get2().and(universes.or(maker))
+    let routes = warp::get2().and(localize.or(universes).or(maker))
         .or_else(|_| Err(warp::reject::not_found()))
         .with(warp::filters::log::log("server"));
 

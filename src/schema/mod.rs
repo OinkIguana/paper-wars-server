@@ -9,7 +9,7 @@ use crate::env;
 
 const DESC_FILE: &'static str = "description.toml";
 lazy_static! {
-    static ref FLUTTER_EXT: &'static OsStr = OsStr::new("ftl");
+    static ref FTL_EXT: &'static OsStr = OsStr::new("ftl");
 }
 
 fn parse_toml<T, P>(path: P) -> Result<T, ()>
@@ -75,9 +75,8 @@ pub fn load_universe(id: Id<Universe>) -> Result<Universe, ()> {
     })
 }
 
-pub fn load_localization(id: Id<Universe>, language: String) -> String {
-    let universe_directory = env::SCHEMA_DIR.join("universes").join(&id);
-    find_localization(&universe_directory, &language)
+pub fn load_localization<S: AsRef<str>>(language: S) -> String {
+    find_localization(&*env::SCHEMA_DIR, language.as_ref())
         .map(fs::read_to_string)
         .filter_map(Result::ok)
         .collect()
@@ -94,7 +93,7 @@ where P: AsRef<Path> {
             if path.is_dir() {
                 Box::new(find_localization(path, language))
             } else if
-                path.extension() == Some(&FLUTTER_EXT) &&
+                path.extension() == Some(&FTL_EXT) &&
                 path.file_stem()
                     .and_then(OsStr::to_str)
                     .map(|name| language.starts_with(name))
