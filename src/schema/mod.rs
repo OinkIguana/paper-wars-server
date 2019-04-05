@@ -75,8 +75,8 @@ pub fn load_universe(id: Id<Universe>) -> Result<Universe, ()> {
     })
 }
 
-pub fn load_localization<S: AsRef<str>>(language: S) -> String {
-    find_localization(&*env::SCHEMA_DIR, language.as_ref())
+pub fn load_localization<S: AsRef<str>>(id: Id<Universe>, language: S) -> String {
+    find_localization(&*env::SCHEMA_DIR.join("universes").join(&id), language.as_ref())
         .map(fs::read_to_string)
         .filter_map(Result::ok)
         .collect()

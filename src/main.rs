@@ -27,10 +27,11 @@ fn main() {
             .map_err(|_| warp::reject::not_found())
         );
 
-    let localize = path("l10n")
+    let localize = path!("l10n" / "universes")
+        .and(warp::filters::path::param::<Id<Universe>>())
         .and(warp::filters::header::header("Accept-Language"))
-        .map(|language: String| accept_language::parse(&language))
-        .map(|languages: Vec<String>| schema::load_localization(&languages[0]))
+        .map(|id, language: String| (id, accept_language::parse(&language)))
+        .map(|(id, languages): (Id<Universe>, Vec<String>)| schema::load_localization(id, &languages[0]))
         .map(|ftl: String| filters::cbor(&ftl))
         .map(|reply| warp::reply::with_header(reply, "Content-Type", "text/plain;charset=UTF-8"));
 
