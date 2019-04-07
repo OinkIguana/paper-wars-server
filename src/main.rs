@@ -41,8 +41,7 @@ fn main() {
             .or(list_all_universes)
         );
 
-    let maker = path("maker")
-        .and(warp::fs::dir(&*env::MAKER_DIR));
+    let maker = path("maker").and(warp::fs::dir(&*env::MAKER_DIR));
 
     let routes = warp::get2().and(localize.or(universes).or(maker))
         .or_else(|_| Err(warp::reject::not_found()))
