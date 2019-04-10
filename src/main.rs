@@ -55,12 +55,14 @@ fn main() {
         .or(warp::post2().and(path("game").and(new_game)));
 
     let maker = path("maker").and(warp::fs::dir(&*env::MAKER_DIR));
+    let player = path("player").and(warp::fs::dir(&*env::PLAYER_DIR));
 
     let routes = warp::get2()
         .and(
             localize
             .or(universes)
             .or(maker)
+            .or(player)
         )
         .or(games)
         .or_else(|_| Err(warp::reject::not_found()))
