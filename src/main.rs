@@ -40,9 +40,10 @@ fn main() {
         );
 
     let new_game = path!("new")
-        .and(warp::filters::body::content_length_limit(512))
+        .and(warp::filters::body::content_length_limit(1024 * 1024))
         .and(warp::filters::body::concat())
         .and_then(filters::from_cbor)
+        .and_then(filters::verify)
         .map(|new_game: api::NewGame| schema::new_game(new_game))
         .map(|game| filters::cbor(&game));
 
