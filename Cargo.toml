@@ -1,26 +1,19 @@
 [package]
-authors = ["Cameron Eldridge <cameldridge+git@gmail.com>"]
+authors = ["Cameron Eldridge <cameldridge@gmail.com>"]
 edition = "2018"
 name = "server"
 version = "0.1.0"
 
 [dependencies]
-dotenv = "0.13"
 shared = { path = "../shared" }
-env_logger = "0.6"
+data = { path = "../data" }
+
+dotenv = "0.15"
+env_logger = "0.7"
+juniper = { version = "0.14", default-features = false, features = ["chrono", "uuid"] }
+juniper_rocket = "0.5"
 log = "0.4"
-warp = "0.1"
-serde_cbor = "0.9"
-toml = "0.5"
-lazy_static = "1.3"
-accept-language = "2.0"
-bytes = "0.4"
-ron = "0.5"
-
-[dependencies.serde]
-features = ["derive"]
-version = "1.0"
-
-[dependencies.uuid]
-features = ["serde", "v4"]
-version = "0.7"
+rocket = "0.4"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+uuid = { version = "0.8", features = ["serde", "v4"] }
