@@ -8,33 +8,36 @@ use env_logger;
 use rocket::{response::content, State};
 use std::env;
 
+// mod models;
 mod schema;
+
 use schema::{Context, Schema};
 
 #[rocket::get("/")]
 fn graphiql() -> content::Html<String> {
-    juniper_rocket::graphiql_source("/graphql", None)
+    juniper_rocket_async::graphiql_source("/graphql")
 }
 
 #[rocket::get("/graphql?<request>")]
-fn get_graphql_handler(
-    context: State<Context>,
-    request: juniper_rocket::GraphQLRequest,
-    schema: State<Schema>,
-) -> juniper_rocket::GraphQLResponse {
-    request.execute_sync(&schema, &context)
+async fn get_graphql_handler<'a>(
+    context: State<'a, Context>,
+    schema: State<'a, Schema>,
+    request: juniper_rocket_async::GraphQLRequest,
+) -> juniper_rocket_async::GraphQLResponse {
+    request.execute(&schema, &context).await
 }
 
 #[rocket::post("/graphql", data = "<request>")]
-fn post_graphql_handler(
-    context: State<Context>,
-    request: juniper_rocket::GraphQLRequest,
-    schema: State<Schema>,
-) -> juniper_rocket::GraphQLResponse {
-    request.execute_sync(&schema, &context)
+async fn post_graphql_handler<'a>(
+    context: State<'a, Context>,
+    schema: State<'a, Schema>,
+    request: juniper_rocket_async::GraphQLRequest,
+) -> juniper_rocket_async::GraphQLResponse {
+    request.execute(&schema, &context).await
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     dotenv::dotenv().ok();
     env_logger::init();
     rocket::ignite()
@@ -44,5 +47,7 @@ fn main() {
             "/",
             routes![get_graphql_handler, post_graphql_handler, graphiql],
         )
-        .launch();
+        .launch()
+        .await
+        .unwrap()
 }
