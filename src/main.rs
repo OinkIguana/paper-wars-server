@@ -10,7 +10,7 @@ use std::env;
 
 mod schema;
 
-use schema::{Context, Schema};
+use schema::{Database, Context, Schema};
 
 #[rocket::get("/")]
 fn graphiql() -> content::Html<String> {
@@ -19,28 +19,30 @@ fn graphiql() -> content::Html<String> {
 
 #[rocket::get("/graphql?<request>")]
 async fn get_graphql_handler<'a>(
-    context: State<'a, Context>,
+    database: State<'a, Database>,
     schema: State<'a, Schema>,
     request: juniper_rocket_async::GraphQLRequest,
 ) -> juniper_rocket_async::GraphQLResponse {
-    request.execute(&schema, &context).await
+    request.execute(&schema, &Context::new(database.clone())).await
 }
 
 #[rocket::post("/graphql", data = "<request>")]
 async fn post_graphql_handler<'a>(
-    context: State<'a, Context>,
+    database: State<'a, Database>,
     schema: State<'a, Schema>,
     request: juniper_rocket_async::GraphQLRequest,
 ) -> juniper_rocket_async::GraphQLResponse {
-    request.execute(&schema, &context).await
+    request.execute(&schema, &Context::new(database.clone())).await
 }
 
 #[tokio::main]
 async fn main() {
     dotenv::dotenv().ok();
     env_logger::init();
+    let database_url = env::var("DATABASE_URL").unwrap();
+
     rocket::ignite()
-        .manage(Context::new(env::var("DATABASE_URL").unwrap()).unwrap())
+        .manage(Database::connect(database_url).unwrap())
         .manage(schema::create())
         .mount(
             "/",
