@@ -8,7 +8,6 @@ use env_logger;
 use rocket::{response::content, State};
 use std::env;
 
-// mod models;
 mod schema;
 
 use schema::{Context, Schema};
