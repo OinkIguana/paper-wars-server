@@ -1,4 +1,5 @@
 use super::Context;
+use super::loader::UniverseSearch;
 use uuid::Uuid;
 
 mod account;
@@ -17,8 +18,21 @@ impl Query {
     }
 
     /// Game universes, created by users.
-    fn universes(universes: Vec<Uuid>) -> Vec<Option<Universe>> {
-        universes.into_iter().map(Universe::new).map(Some).collect()
+    async fn universes(
+        context: &Context,
+        universes: Option<Vec<Uuid>>,
+        search: Option<UniverseSearch>,
+    ) -> Vec<Option<Universe>> {
+        if let Some(universes) = universes {
+            return universes.into_iter().map(Universe::new).map(Some).collect()
+        }
+        context.universes()
+            .search(search)
+            .await
+            .into_iter()
+            .map(|universe| Universe::new(universe.id))
+            .map(Some)
+            .collect()
     }
 
     /// User accounts.

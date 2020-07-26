@@ -1,12 +1,10 @@
-use super::Database;
+use super::{Database, Loader};
 use data::{Account, Universe};
 use uuid::Uuid;
 
-type Loader<T> = dataloader::cached::Loader<Uuid, Option<T>, Database>;
-
 pub struct Context {
-    universe_loader: Loader<Universe>,
-    account_loader: Loader<Account>,
+    universe_loader: Loader<Uuid, Universe>,
+    account_loader: Loader<Uuid, Account>,
 }
 
 impl Context {
@@ -17,11 +15,11 @@ impl Context {
         }
     }
 
-    pub fn universes(&self) -> &Loader<Universe> {
+    pub fn universes(&self) -> &Loader<Uuid, Universe> {
         &self.universe_loader
     }
 
-    pub fn accounts(&self) -> &Loader<Account> {
+    pub fn accounts(&self) -> &Loader<Uuid, Account> {
         &self.account_loader
     }
 }
