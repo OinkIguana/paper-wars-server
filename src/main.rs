@@ -13,7 +13,7 @@ use schema::{Context, Schema};
 
 #[rocket::get("/")]
 fn graphiql() -> content::Html<String> {
-    juniper_rocket::graphiql_source("/graphql")
+    juniper_rocket::graphiql_source("/graphql", None)
 }
 
 #[rocket::get("/graphql?<request>")]
@@ -22,7 +22,7 @@ fn get_graphql_handler(
     request: juniper_rocket::GraphQLRequest,
     schema: State<Schema>,
 ) -> juniper_rocket::GraphQLResponse {
-    request.execute(&schema, &context)
+    request.execute_sync(&schema, &context)
 }
 
 #[rocket::post("/graphql", data = "<request>")]
@@ -31,7 +31,7 @@ fn post_graphql_handler(
     request: juniper_rocket::GraphQLRequest,
     schema: State<Schema>,
 ) -> juniper_rocket::GraphQLResponse {
-    request.execute(&schema, &context)
+    request.execute_sync(&schema, &context)
 }
 
 fn main() {
@@ -40,6 +40,9 @@ fn main() {
     rocket::ignite()
         .manage(Context::new(env::var("DATABASE_URL").unwrap()).unwrap())
         .manage(schema::create())
-        .mount("/", routes![get_graphql_handler, post_graphql_handler, graphiql])
+        .mount(
+            "/",
+            routes![get_graphql_handler, post_graphql_handler, graphiql],
+        )
         .launch();
 }

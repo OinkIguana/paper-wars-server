@@ -8,10 +8,11 @@ version = "0.1.0"
 shared = { path = "../shared" }
 data = { path = "../data" }
 
+anyhow = "1.0"
 dotenv = "0.15"
 env_logger = "0.7"
-juniper = { version = "0.14", default-features = false, features = ["chrono", "uuid"] }
-juniper_rocket = "0.5"
+juniper = { git = "https://github.com/foxfriends/juniper.git", branch = "master", default-features = false, features = ["chrono", "uuid"] }
+juniper_rocket = { git = "https://github.com/foxfriends/juniper.git", branch = "master" }
 log = "0.4"
 rocket = "0.4"
 serde = { version = "1.0", features = ["derive"] }

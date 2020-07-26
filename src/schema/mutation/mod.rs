@@ -1,6 +1,1 @@
-use super::Context;
-
-pub struct Mutation;
-
-#[juniper::object(Context = Context)]
-impl Mutation {}
+pub type Mutation = juniper::EmptyMutation<super::Context>;
