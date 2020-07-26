@@ -1,9 +1,13 @@
-[Paper Wars]: https://github.com/oinkiguana/paper-wars
-[client]: https://github.com/oinkiguana/paper-wars-client
+[Paper Wars]: https://github.com/foxfriends/paper-wars
+[paper-wars-data]: https://github.com/foxfriends/paper-wars-data
+[client]: https://github.com/foxfriends/paper-wars-client
 
 # Paper Wars (server)
 
-The server for [Paper Wars](). This is the single source of truth for all game clients, and all moves
-must be made through requests to the server.
+The server for [Paper Wars][], exposing a GraphQL API to all of the data required to view the
+game, as well as the endpoints to interact with the it. The [client][] library is provided to
+actually perform these requests.
 
-All requests should be sent using the [client]().
+See also:
+*   The database is handled by the [paper-wars-data][] repository.
+*   The game logic will be handled elsewhere also, eventually.
