@@ -1,5 +1,5 @@
 use super::{Database, Loader};
-use data::{Account, Email, Universe};
+use data::*;
 use diesel_citext::types::CiString;
 use uuid::Uuid;
 
@@ -7,6 +7,7 @@ pub struct Context {
     universe_loader: Loader<Uuid, Universe>,
     account_loader: Loader<Uuid, Account>,
     email_loader: Loader<CiString, Email>,
+    login_loader: Loader<Uuid, Login>,
 }
 
 impl Context {
@@ -14,7 +15,8 @@ impl Context {
         Self {
             universe_loader: Loader::new(database.clone()),
             account_loader: Loader::new(database.clone()),
-            email_loader: Loader::new(database),
+            email_loader: Loader::new(database.clone()),
+            login_loader: Loader::new(database),
         }
     }
 
@@ -28,6 +30,10 @@ impl Context {
 
     pub fn emails(&self) -> &Loader<CiString, Email> {
         &self.email_loader
+    }
+
+    pub fn logins(&self) -> &Loader<Uuid, Login> {
+        &self.login_loader
     }
 }
 

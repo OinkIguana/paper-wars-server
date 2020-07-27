@@ -24,14 +24,17 @@ impl Email {
 
 #[juniper::graphql_object(Context = Context)]
 impl Email {
+    /// The actual email address.
     async fn address(&self, context: &Context) -> FieldResult<String> {
         Ok(self.load(context).await?.address.into())
     }
 
+    /// Whether this email has been verified.
     async fn verified_at(&self, context: &Context) -> FieldResult<Option<DateTime<Utc>>> {
         Ok(self.load(context).await?.verified_at)
     }
 
+    /// How long this email is protected while unverified.
     async fn protected_until(&self, context: &Context) -> FieldResult<DateTime<Utc>> {
         Ok(self.load(context).await?.protected_until)
     }
@@ -39,5 +42,15 @@ impl Email {
     /// When this email was created.
     async fn created_at(&self, context: &Context) -> FieldResult<DateTime<Utc>> {
         Ok(self.load(context).await?.created_at)
+    }
+
+    /// Whether this is the primary (login and contact) email address for this account.
+    async fn is_primary_email(&self, context: &Context) -> FieldResult<bool> {
+        let account_id = self.load(context).await?.account_id;
+        Ok(context.logins()
+            .load(account_id)
+            .await
+            .map(|login| login.email_address == self.address)
+            .unwrap_or(false))
     }
 }

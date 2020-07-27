@@ -55,3 +55,5 @@ where
         }
     }
 }
+
+batch_fn!(uuid::Uuid, data::Login, logins, account_id);
