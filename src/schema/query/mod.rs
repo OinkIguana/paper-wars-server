@@ -1,11 +1,13 @@
 use super::Context;
-use super::loader::UniverseSearch;
+use super::loader::{AccountSearch, UniverseSearch};
 use uuid::Uuid;
 
 mod account;
+mod email;
 mod universe;
 
 pub use account::Account;
+pub use email::Email;
 pub use universe::Universe;
 
 pub struct Query;
@@ -36,7 +38,20 @@ impl Query {
     }
 
     /// User accounts.
-    fn accounts(accounts: Vec<Uuid>) -> Vec<Option<Account>> {
-        accounts.into_iter().map(Account::new).map(Some).collect()
+    async fn accounts(
+        context: &Context,
+        accounts: Option<Vec<Uuid>>,
+        search: Option<AccountSearch>,
+    ) -> Vec<Option<Account>> {
+        if let Some(accounts) = accounts {
+            return accounts.into_iter().map(Account::new).map(Some).collect()
+        }
+        context.accounts()
+            .search(search)
+            .await
+            .into_iter()
+            .map(|account| Account::new(account.id))
+            .map(Some)
+            .collect()
     }
 }

@@ -1,21 +1,29 @@
 use super::Loader;
 use diesel::prelude::*;
+use diesel::dsl::*;
 use diesel_citext::prelude::*;
 use tokio::task;
-use data::{Universe, universes::dsl::*};
+use data::{Account, accounts::dsl::*, emails};
 use uuid::Uuid;
 
-batch_fn!(Universe, universes);
+batch_fn!(Account, accounts);
 
-impl Loader<Uuid, Universe> {
-    pub async fn search(&self, search: Option<UniverseSearch>) -> Vec<Universe> {
-        let load_result: anyhow::Result<Vec<Universe>> = task::block_in_place(|| {
+impl Loader<Uuid, Account> {
+    pub async fn search(&self, search: Option<AccountSearch>) -> Vec<Account> {
+        let load_result: anyhow::Result<Vec<Account>> = task::block_in_place(|| {
             let conn = self.database.connection()?;
-            let mut query = universes.into_boxed();
+            let mut query = accounts
+                .into_boxed();
             if let Some(search) = search {
                 if let Some(search_name) = search.name {
                     query = query
                         .filter(name.like(CiString::from(format!("%{}%", search_name))));
+                }
+                if let Some(search_email) = search.email {
+                    query = query
+                        .filter(exists(emails::table
+                            .filter(emails::address.eq(CiString::from(search_email)))
+                            .filter(emails::account_id.eq(id))));
                 }
                 if let Some(limit) = search.limit {
                     query = query.limit(limit as i64);
@@ -26,7 +34,6 @@ impl Loader<Uuid, Universe> {
             }
             Ok(query.load(&conn)?)
         });
-
         let items = load_result.unwrap_or(vec![]);
         let to_cache = items.iter()
             .cloned()
@@ -37,8 +44,9 @@ impl Loader<Uuid, Universe> {
 }
 
 #[derive(juniper::GraphQLInputObject)]
-pub struct UniverseSearch {
+pub struct AccountSearch {
     name: Option<String>,
+    email: Option<String>,
     limit: Option<i32>,
     cursor: Option<i32>,
 }

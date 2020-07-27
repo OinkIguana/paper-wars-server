@@ -1,5 +1,5 @@
 use anyhow::anyhow;
-use super::Context;
+use super::{Context, Email};
 use juniper::FieldResult;
 use uuid::Uuid;
 use chrono::{DateTime, Utc};
@@ -37,5 +37,16 @@ impl Account {
     /// When this account was created.
     async fn created_at(&self, context: &Context) -> FieldResult<DateTime<Utc>> {
         Ok(self.load(context).await?.created_at)
+    }
+
+    /// Email addresses associated with this account. This should only be viewable to the
+    /// account's owner.
+    async fn emails(&self, context: &Context) -> Vec<Email> {
+        context.emails()
+            .for_account(&self.id)
+            .await
+            .into_iter()
+            .map(|email| Email::new(email.address))
+            .collect()
     }
 }
