@@ -1,4 +1,4 @@
-use super::{Contributor, Context};
+use super::{Context, Contributor};
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use juniper::FieldResult;

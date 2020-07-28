@@ -14,7 +14,8 @@ impl Loader<Uuid, Universe> {
             let mut query = universes::table.into_boxed();
             if let Some(search) = search {
                 if let Some(search_name) = search.name {
-                    query = query.filter(universes::name.like(CiString::from(format!("%{}%", search_name))));
+                    query = query
+                        .filter(universes::name.like(CiString::from(format!("%{}%", search_name))));
                 }
                 if let Some(limit) = search.limit {
                     query = query.limit(limit as i64);
@@ -27,11 +28,7 @@ impl Loader<Uuid, Universe> {
         });
 
         let items = load_result.unwrap_or(vec![]);
-        let to_cache = items
-            .iter()
-            .cloned()
-            .map(|item| (item.id.to_owned(), Some(item)));
-        self.prime_many(to_cache).await;
+        self.prime_many(items.clone()).await;
         items
     }
 }

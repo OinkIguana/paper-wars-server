@@ -34,9 +34,18 @@ macro_rules! batch_fn {
                 });
                 let items = load_result.unwrap_or(vec![]);
                 for item in items {
-                    map.get_mut(&($(item.$id.clone()),+)).unwrap().replace(item);
+                    map.get_mut(&$crate::schema::loader::traits::BatchFnItem::key(&item)).unwrap().replace(item);
                 }
                 map
+            }
+        }
+
+        #[allow(unused_parens)]
+        impl $crate::schema::loader::traits::BatchFnItem for $model {
+            type Key = ($($key),+);
+
+            fn key(&self) -> Self::Key {
+                ($(self.$id.clone()),+)
             }
         }
     };

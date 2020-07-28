@@ -3,6 +3,7 @@ use dataloader::BatchFn;
 use std::fmt::Debug;
 use std::hash::Hash;
 
+mod traits;
 #[macro_use]
 mod macros;
 
@@ -46,13 +47,17 @@ where
         self.loader.load_many(keys).await
     }
 
-    pub async fn prime(&self, key: K, value: Option<T>) {
+    async fn prime(&self, key: K, value: Option<T>) {
         self.loader.prime(key, value).await;
     }
 
-    pub async fn prime_many(&self, items: impl IntoIterator<Item = (K, Option<T>)>) {
-        for (key, value) in items {
-            self.prime(key, value).await;
+    async fn prime_many(&self, items: impl IntoIterator<Item = T>)
+    where
+        T: traits::BatchFnItem<Key = K>,
+    {
+        for item in items {
+            self.prime(traits::BatchFnItem::key(&item), Some(item))
+                .await;
         }
     }
 }

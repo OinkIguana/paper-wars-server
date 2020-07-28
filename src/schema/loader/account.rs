@@ -15,7 +15,8 @@ impl Loader<Uuid, Account> {
             let mut query = accounts::table.into_boxed();
             if let Some(search) = search {
                 if let Some(search_name) = search.name {
-                    query = query.filter(accounts::name.like(CiString::from(format!("%{}%", search_name))));
+                    query = query
+                        .filter(accounts::name.like(CiString::from(format!("%{}%", search_name))));
                 }
                 if let Some(search_email) = search.email {
                     query = query.filter(exists(
@@ -34,11 +35,7 @@ impl Loader<Uuid, Account> {
             Ok(query.load(&conn)?)
         });
         let items = load_result.unwrap_or(vec![]);
-        let to_cache = items
-            .iter()
-            .cloned()
-            .map(|item| (item.id.to_owned(), Some(item)));
-        self.prime_many(to_cache).await;
+        self.prime_many(items.clone()).await;
         items
     }
 }

@@ -11,15 +11,13 @@ impl Loader<CiString, Email> {
     pub async fn for_account(&self, id: &Uuid) -> Vec<Email> {
         let load_result: anyhow::Result<Vec<Email>> = task::block_in_place(|| {
             let conn = self.database.connection()?;
-            Ok(emails::table.filter(emails::account_id.eq(id)).load(&conn)?)
+            Ok(emails::table
+                .filter(emails::account_id.eq(id))
+                .load(&conn)?)
         });
 
         let items = load_result.unwrap_or(vec![]);
-        let to_cache = items
-            .iter()
-            .cloned()
-            .map(|item| (item.address.to_owned(), Some(item)));
-        self.prime_many(to_cache).await;
+        self.prime_many(items.clone()).await;
         items
     }
 }
