@@ -3,11 +3,13 @@ use super::Context;
 use uuid::Uuid;
 
 mod account;
+mod archetype;
 mod contributor;
 mod email;
 mod universe;
 
 pub use account::Account;
+pub use archetype::Archetype;
 pub use contributor::Contributor;
 pub use email::Email;
 pub use universe::Universe;

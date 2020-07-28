@@ -1,4 +1,4 @@
-use super::{Context, Contributor};
+use super::{Context, Archetype, Contributor};
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use juniper::FieldResult;
@@ -47,6 +47,17 @@ impl Universe {
             .await
             .into_iter()
             .map(|contributor| Contributor::new(contributor.universe_id, contributor.account_id))
+            .collect())
+    }
+
+    /// Archetypes which belong to this universe.
+    async fn archetypes(&self, context: &Context) -> FieldResult<Vec<Archetype>> {
+        Ok(context
+            .archetypes()
+            .for_universe(&self.id)
+            .await
+            .into_iter()
+            .map(|archetype| Archetype::new(archetype.id))
             .collect())
     }
 }

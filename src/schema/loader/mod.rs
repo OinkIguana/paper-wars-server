@@ -8,6 +8,7 @@ mod traits;
 mod macros;
 
 mod account;
+mod archetype;
 mod contributor;
 mod email;
 mod universe;
