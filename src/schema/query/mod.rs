@@ -4,17 +4,21 @@ use uuid::Uuid;
 
 mod account;
 mod archetype;
+mod archetype_version;
 mod contributor;
 mod email;
 mod map;
+mod map_version;
 mod universe;
 
-pub use account::Account;
-pub use archetype::Archetype;
-pub use contributor::Contributor;
-pub use email::Email;
-pub use map::Map;
-pub use universe::Universe;
+use account::Account;
+use archetype::Archetype;
+use archetype_version::ArchetypeVersion;
+use contributor::Contributor;
+use email::Email;
+use map::Map;
+use map_version::MapVersion;
+use universe::Universe;
 
 pub struct Query;
 

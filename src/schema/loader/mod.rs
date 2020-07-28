@@ -9,9 +9,11 @@ mod macros;
 
 mod account;
 mod archetype;
+mod archetype_version;
 mod contributor;
 mod email;
 mod map;
+mod map_version;
 mod universe;
 
 pub use account::*;

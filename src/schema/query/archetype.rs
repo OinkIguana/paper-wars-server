@@ -1,4 +1,4 @@
-use super::Context;
+use super::{Context, ArchetypeVersion};
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use juniper::FieldResult;
@@ -37,5 +37,15 @@ impl Archetype {
     /// When this archetype was created.
     async fn created_at(&self, context: &Context) -> FieldResult<DateTime<Utc>> {
         Ok(self.load(context).await?.created_at)
+    }
+
+    async fn versions(&self, context: &Context) -> FieldResult<Vec<ArchetypeVersion>> {
+        Ok(context
+            .archetype_versions()
+            .for_archetype(&self.id)
+            .await
+            .into_iter()
+            .map(|version| ArchetypeVersion::new(version.archetype_id, version.version))
+            .collect())
     }
 }

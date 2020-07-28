@@ -6,10 +6,12 @@ use uuid::Uuid;
 pub struct Context {
     account_loader: Loader<Uuid, Account>,
     archetype_loader: Loader<Uuid, Archetype>,
+    archetype_version_loader: Loader<(Uuid, i32), ArchetypeVersion>,
     contributor_loader: Loader<(Uuid, Uuid), Contributor>,
     email_loader: Loader<CiString, Email>,
     login_loader: Loader<Uuid, Login>,
     map_loader: Loader<Uuid, Map>,
+    map_version_loader: Loader<(Uuid, i32), MapVersion>,
     universe_loader: Loader<Uuid, Universe>,
 }
 
@@ -18,10 +20,12 @@ impl Context {
         Self {
             account_loader: Loader::new(database.clone()),
             archetype_loader: Loader::new(database.clone()),
+            archetype_version_loader: Loader::new(database.clone()),
             contributor_loader: Loader::new(database.clone()),
             email_loader: Loader::new(database.clone()),
             login_loader: Loader::new(database.clone()),
             map_loader: Loader::new(database.clone()),
+            map_version_loader: Loader::new(database.clone()),
             universe_loader: Loader::new(database),
         }
     }
@@ -32,6 +36,10 @@ impl Context {
 
     pub fn archetypes(&self) -> &Loader<Uuid, Archetype> {
         &self.archetype_loader
+    }
+
+    pub fn archetype_versions(&self) -> &Loader<(Uuid, i32), ArchetypeVersion> {
+        &self.archetype_version_loader
     }
 
     pub fn contributors(&self) -> &Loader<(Uuid, Uuid), Contributor> {
@@ -48,6 +56,10 @@ impl Context {
 
     pub fn maps(&self) -> &Loader<Uuid, Map> {
         &self.map_loader
+    }
+
+    pub fn map_versions(&self) -> &Loader<(Uuid, i32), MapVersion> {
+        &self.map_version_loader
     }
 
     pub fn universes(&self) -> &Loader<Uuid, Universe> {

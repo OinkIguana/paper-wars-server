@@ -21,7 +21,7 @@ impl Contributor {
     async fn load(&self, context: &Context) -> anyhow::Result<data::Contributor> {
         context
             .contributors()
-            .load((self.universe_id.to_owned(), self.account_id.to_owned()))
+            .load((self.universe_id, self.account_id))
             .await
             .ok_or_else(|| {
                 anyhow!(

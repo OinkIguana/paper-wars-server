@@ -1,4 +1,4 @@
-use super::Context;
+use super::{Context, MapVersion};
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use juniper::FieldResult;
@@ -37,5 +37,15 @@ impl Map {
     /// When this map was created.
     async fn created_at(&self, context: &Context) -> FieldResult<DateTime<Utc>> {
         Ok(self.load(context).await?.created_at)
+    }
+
+    async fn versions(&self, context: &Context) -> FieldResult<Vec<MapVersion>> {
+        Ok(context
+            .map_versions()
+            .for_map(&self.id)
+            .await
+            .into_iter()
+            .map(|version| MapVersion::new(version.map_id, version.version))
+            .collect())
     }
 }
