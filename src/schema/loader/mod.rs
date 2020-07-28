@@ -7,7 +7,8 @@ use std::hash::Hash;
 mod macros;
 
 mod account;
-mod emails;
+mod contributor;
+mod email;
 mod universe;
 
 pub use account::*;
@@ -56,4 +57,4 @@ where
     }
 }
 
-batch_fn!(uuid::Uuid, data::Login, logins, account_id);
+batch_fn!(logins => data::Login { account_id: uuid::Uuid });

@@ -1,12 +1,14 @@
-use super::Context;
 use super::loader::{AccountSearch, UniverseSearch};
+use super::Context;
 use uuid::Uuid;
 
 mod account;
+mod contributor;
 mod email;
 mod universe;
 
 pub use account::Account;
+pub use contributor::Contributor;
 pub use email::Email;
 pub use universe::Universe;
 
@@ -26,9 +28,10 @@ impl Query {
         search: Option<UniverseSearch>,
     ) -> Vec<Option<Universe>> {
         if let Some(universes) = universes {
-            return universes.into_iter().map(Universe::new).map(Some).collect()
+            return universes.into_iter().map(Universe::new).map(Some).collect();
         }
-        context.universes()
+        context
+            .universes()
             .search(search)
             .await
             .into_iter()
@@ -44,9 +47,10 @@ impl Query {
         search: Option<AccountSearch>,
     ) -> Vec<Option<Account>> {
         if let Some(accounts) = accounts {
-            return accounts.into_iter().map(Account::new).map(Some).collect()
+            return accounts.into_iter().map(Account::new).map(Some).collect();
         }
-        context.accounts()
+        context
+            .accounts()
             .search(search)
             .await
             .into_iter()

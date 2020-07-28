@@ -1,8 +1,8 @@
+use super::{Context, Contributor, Email};
 use anyhow::anyhow;
-use super::{Context, Email};
+use chrono::{DateTime, Utc};
 use juniper::FieldResult;
 use uuid::Uuid;
-use chrono::{DateTime, Utc};
 
 pub struct Account {
     id: Uuid,
@@ -42,11 +42,23 @@ impl Account {
     /// Email addresses associated with this account. This should only be viewable to the
     /// account's owner.
     async fn emails(&self, context: &Context) -> Vec<Email> {
-        context.emails()
+        context
+            .emails()
             .for_account(&self.id)
             .await
             .into_iter()
             .map(|email| Email::new(email.address))
+            .collect()
+    }
+
+    /// The universes that this account is a contributor to.
+    async fn contributions(&self, context: &Context) -> Vec<Contributor> {
+        context
+            .contributors()
+            .for_account(&self.id)
+            .await
+            .into_iter()
+            .map(|contributor| Contributor::new(contributor.universe_id, contributor.account_id))
             .collect()
     }
 }

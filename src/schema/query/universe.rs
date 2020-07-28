@@ -1,8 +1,8 @@
+use super::{Contributor, Context};
 use anyhow::anyhow;
-use super::Context;
+use chrono::{DateTime, Utc};
 use juniper::FieldResult;
 use uuid::Uuid;
-use chrono::{DateTime, Utc};
 
 pub struct Universe {
     id: Uuid,
@@ -37,5 +37,16 @@ impl Universe {
     /// When this universe was created.
     async fn created_at(&self, context: &Context) -> FieldResult<DateTime<Utc>> {
         Ok(self.load(context).await?.created_at)
+    }
+
+    /// The accounts who contribute to the development of this universe.
+    async fn contributors(&self, context: &Context) -> FieldResult<Vec<Contributor>> {
+        Ok(context
+            .contributors()
+            .for_universe(&self.id)
+            .await
+            .into_iter()
+            .map(|contributor| Contributor::new(contributor.universe_id, contributor.account_id))
+            .collect())
     }
 }

@@ -1,21 +1,20 @@
 use super::Loader;
+use data::{universes, Universe};
 use diesel::prelude::*;
 use diesel_citext::prelude::*;
 use tokio::task;
-use data::{Universe, universes::dsl::*};
 use uuid::Uuid;
 
-batch_fn!(Universe, universes);
+batch_fn!(universes => Universe { id: Uuid });
 
 impl Loader<Uuid, Universe> {
     pub async fn search(&self, search: Option<UniverseSearch>) -> Vec<Universe> {
         let load_result: anyhow::Result<Vec<Universe>> = task::block_in_place(|| {
             let conn = self.database.connection()?;
-            let mut query = universes.into_boxed();
+            let mut query = universes::table.into_boxed();
             if let Some(search) = search {
                 if let Some(search_name) = search.name {
-                    query = query
-                        .filter(name.like(CiString::from(format!("%{}%", search_name))));
+                    query = query.filter(universes::name.like(CiString::from(format!("%{}%", search_name))));
                 }
                 if let Some(limit) = search.limit {
                     query = query.limit(limit as i64);
@@ -28,7 +27,8 @@ impl Loader<Uuid, Universe> {
         });
 
         let items = load_result.unwrap_or(vec![]);
-        let to_cache = items.iter()
+        let to_cache = items
+            .iter()
             .cloned()
             .map(|item| (item.id.to_owned(), Some(item)));
         self.prime_many(to_cache).await;

@@ -1,4 +1,4 @@
-#![feature(proc_macro_hygiene, decl_macro)]
+#![feature(proc_macro_hygiene, decl_macro, iterator_fold_self)]
 
 #[macro_use]
 extern crate rocket;
@@ -10,7 +10,7 @@ use std::env;
 
 mod schema;
 
-use schema::{Database, Context, Schema};
+use schema::{Context, Database, Schema};
 
 #[rocket::get("/")]
 fn graphiql() -> content::Html<String> {
@@ -23,7 +23,9 @@ async fn get_graphql_handler<'a>(
     schema: State<'a, Schema>,
     request: juniper_rocket_async::GraphQLRequest,
 ) -> juniper_rocket_async::GraphQLResponse {
-    request.execute(&schema, &Context::new(database.clone())).await
+    request
+        .execute(&schema, &Context::new(database.clone()))
+        .await
 }
 
 #[rocket::post("/graphql", data = "<request>")]
@@ -32,7 +34,9 @@ async fn post_graphql_handler<'a>(
     schema: State<'a, Schema>,
     request: juniper_rocket_async::GraphQLRequest,
 ) -> juniper_rocket_async::GraphQLResponse {
-    request.execute(&schema, &Context::new(database.clone())).await
+    request
+        .execute(&schema, &Context::new(database.clone()))
+        .await
 }
 
 #[tokio::main]

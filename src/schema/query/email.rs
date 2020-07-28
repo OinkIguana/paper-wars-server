@@ -1,8 +1,8 @@
-use anyhow::anyhow;
 use super::Context;
+use anyhow::anyhow;
+use chrono::{DateTime, Utc};
 use diesel_citext::types::CiString;
 use juniper::FieldResult;
-use chrono::{DateTime, Utc};
 
 pub struct Email {
     address: CiString,
@@ -10,7 +10,9 @@ pub struct Email {
 
 impl Email {
     pub fn new(address: impl Into<CiString>) -> Self {
-        Self { address: address.into() }
+        Self {
+            address: address.into(),
+        }
     }
 
     async fn load(&self, context: &Context) -> anyhow::Result<data::Email> {
@@ -47,7 +49,8 @@ impl Email {
     /// Whether this is the primary (login and contact) email address for this account.
     async fn is_primary_email(&self, context: &Context) -> FieldResult<bool> {
         let account_id = self.load(context).await?.account_id;
-        Ok(context.logins()
+        Ok(context
+            .logins()
             .load(account_id)
             .await
             .map(|login| login.email_address == self.address)
