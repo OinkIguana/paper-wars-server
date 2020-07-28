@@ -1,4 +1,4 @@
-use super::{Context, Archetype, Contributor};
+use super::{Archetype, Context, Contributor, Map};
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use juniper::FieldResult;
@@ -58,6 +58,17 @@ impl Universe {
             .await
             .into_iter()
             .map(|archetype| Archetype::new(archetype.id))
+            .collect())
+    }
+
+    /// Maps which belong to this universe.
+    async fn maps(&self, context: &Context) -> FieldResult<Vec<Map>> {
+        Ok(context
+            .maps()
+            .for_universe(&self.id)
+            .await
+            .into_iter()
+            .map(|map| Map::new(map.id))
             .collect())
     }
 }

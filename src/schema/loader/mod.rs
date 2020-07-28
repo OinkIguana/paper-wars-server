@@ -11,6 +11,7 @@ mod account;
 mod archetype;
 mod contributor;
 mod email;
+mod map;
 mod universe;
 
 pub use account::*;

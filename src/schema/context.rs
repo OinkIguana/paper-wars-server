@@ -9,6 +9,7 @@ pub struct Context {
     contributor_loader: Loader<(Uuid, Uuid), Contributor>,
     email_loader: Loader<CiString, Email>,
     login_loader: Loader<Uuid, Login>,
+    map_loader: Loader<Uuid, Map>,
     universe_loader: Loader<Uuid, Universe>,
 }
 
@@ -20,6 +21,7 @@ impl Context {
             contributor_loader: Loader::new(database.clone()),
             email_loader: Loader::new(database.clone()),
             login_loader: Loader::new(database.clone()),
+            map_loader: Loader::new(database.clone()),
             universe_loader: Loader::new(database),
         }
     }
@@ -42,6 +44,10 @@ impl Context {
 
     pub fn logins(&self) -> &Loader<Uuid, Login> {
         &self.login_loader
+    }
+
+    pub fn maps(&self) -> &Loader<Uuid, Map> {
+        &self.map_loader
     }
 
     pub fn universes(&self) -> &Loader<Uuid, Universe> {

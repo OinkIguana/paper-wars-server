@@ -68,5 +68,5 @@ macro_rules! join {
             self.prime_many(items.clone()).await;
             items
         }
-    }
+    };
 }

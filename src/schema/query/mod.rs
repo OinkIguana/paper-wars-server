@@ -6,12 +6,14 @@ mod account;
 mod archetype;
 mod contributor;
 mod email;
+mod map;
 mod universe;
 
 pub use account::Account;
 pub use archetype::Archetype;
 pub use contributor::Contributor;
 pub use email::Email;
+pub use map::Map;
 pub use universe::Universe;
 
 pub struct Query;
