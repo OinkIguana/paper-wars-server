@@ -65,7 +65,7 @@ impl Universe {
     async fn maps(&self, context: &Context) -> FieldResult<Vec<Map>> {
         Ok(context
             .maps()
-            .for_universe(&self.id)
+            .for_universe(&self.load(context).await?.id)
             .await
             .into_iter()
             .map(|map| Map::new(map.id))
@@ -76,7 +76,7 @@ impl Universe {
     async fn versions(&self, context: &Context) -> FieldResult<Vec<UniverseVersion>> {
         Ok(context
             .universe_versions()
-            .for_universe(&self.id)
+            .for_universe(&self.load(context).await?.id)
             .await
             .into_iter()
             .map(|version| UniverseVersion::new(version.universe_id, version.version))

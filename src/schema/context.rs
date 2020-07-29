@@ -9,9 +9,11 @@ pub struct Context {
     archetype_version_loader: Loader<(Uuid, i32), ArchetypeVersion>,
     contributor_loader: Loader<(Uuid, Uuid), Contributor>,
     email_loader: Loader<CiString, Email>,
+    game_loader: Loader<Uuid, Game>,
     login_loader: Loader<Uuid, Login>,
     map_loader: Loader<Uuid, Map>,
     map_version_loader: Loader<(Uuid, i32), MapVersion>,
+    player_loader: Loader<(Uuid, Uuid), Player>,
     universe_loader: Loader<Uuid, Universe>,
     universe_version_loader: Loader<(Uuid, i32), UniverseVersion>,
     universe_version_archetype_loader: Loader<(Uuid, i32, Uuid), UniverseVersionArchetype>,
@@ -26,9 +28,11 @@ impl Context {
             archetype_version_loader: Loader::new(database.clone()),
             contributor_loader: Loader::new(database.clone()),
             email_loader: Loader::new(database.clone()),
+            game_loader: Loader::new(database.clone()),
             login_loader: Loader::new(database.clone()),
             map_loader: Loader::new(database.clone()),
             map_version_loader: Loader::new(database.clone()),
+            player_loader: Loader::new(database.clone()),
             universe_loader: Loader::new(database.clone()),
             universe_version_loader: Loader::new(database.clone()),
             universe_version_archetype_loader: Loader::new(database.clone()),
@@ -56,6 +60,10 @@ impl Context {
         &self.email_loader
     }
 
+    pub fn games(&self) -> &Loader<Uuid, Game> {
+        &self.game_loader
+    }
+
     pub fn logins(&self) -> &Loader<Uuid, Login> {
         &self.login_loader
     }
@@ -68,6 +76,10 @@ impl Context {
         &self.map_version_loader
     }
 
+    pub fn players(&self) -> &Loader<(Uuid, Uuid), Player> {
+        &self.player_loader
+    }
+
     pub fn universes(&self) -> &Loader<Uuid, Universe> {
         &self.universe_loader
     }
@@ -76,7 +88,9 @@ impl Context {
         &self.universe_version_loader
     }
 
-    pub fn universe_version_archetypes(&self) -> &Loader<(Uuid, i32, Uuid), UniverseVersionArchetype> {
+    pub fn universe_version_archetypes(
+        &self,
+    ) -> &Loader<(Uuid, i32, Uuid), UniverseVersionArchetype> {
         &self.universe_version_archetype_loader
     }
 

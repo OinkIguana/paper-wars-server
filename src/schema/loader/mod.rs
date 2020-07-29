@@ -14,6 +14,7 @@ mod contributor;
 mod email;
 mod map;
 mod map_version;
+mod player;
 mod universe;
 mod universe_version;
 mod universe_version_archetype;
@@ -70,3 +71,4 @@ where
 }
 
 batch_fn!(logins => data::Login { account_id: uuid::Uuid });
+batch_fn!(games => data::Game { id: uuid::Uuid });

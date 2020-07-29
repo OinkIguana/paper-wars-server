@@ -42,7 +42,7 @@ impl Archetype {
     async fn versions(&self, context: &Context) -> FieldResult<Vec<ArchetypeVersion>> {
         Ok(context
             .archetype_versions()
-            .for_archetype(&self.id)
+            .for_archetype(&self.load(context).await?.id)
             .await
             .into_iter()
             .map(|version| ArchetypeVersion::new(version.archetype_id, version.version))

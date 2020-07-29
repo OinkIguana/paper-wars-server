@@ -39,10 +39,11 @@ impl Map {
         Ok(self.load(context).await?.created_at)
     }
 
+    /// Versions of this map.
     async fn versions(&self, context: &Context) -> FieldResult<Vec<MapVersion>> {
         Ok(context
             .map_versions()
-            .for_map(&self.id)
+            .for_map(&self.load(context).await?.id)
             .await
             .into_iter()
             .map(|version| MapVersion::new(version.map_id, version.version))

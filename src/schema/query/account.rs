@@ -1,4 +1,4 @@
-use super::{Context, Contributor, Email};
+use super::{Context, Contributor, Email, Game};
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use juniper::FieldResult;
@@ -41,24 +41,35 @@ impl Account {
 
     /// Email addresses associated with this account. This should only be viewable to the
     /// account's owner.
-    async fn emails(&self, context: &Context) -> Vec<Email> {
-        context
+    async fn emails(&self, context: &Context) -> FieldResult<Vec<Email>> {
+        Ok(context
             .emails()
-            .for_account(&self.id)
+            .for_account(&self.load(context).await?.id)
             .await
             .into_iter()
             .map(|email| Email::new(email.address))
-            .collect()
+            .collect())
     }
 
     /// The universes that this account is a contributor to.
-    async fn contributions(&self, context: &Context) -> Vec<Contributor> {
-        context
+    async fn contributions(&self, context: &Context) -> FieldResult<Vec<Contributor>> {
+        Ok(context
             .contributors()
-            .for_account(&self.id)
+            .for_account(&self.load(context).await?.id)
             .await
             .into_iter()
             .map(|contributor| Contributor::new(contributor.universe_id, contributor.account_id))
-            .collect()
+            .collect())
+    }
+
+    /// Games that this person is playing.
+    async fn games(&self, context: &Context) -> FieldResult<Vec<Game>> {
+        Ok(context
+            .players()
+            .for_account(&self.load(context).await?.id)
+            .await
+            .into_iter()
+            .map(|player| Game::new(player.game_id))
+            .collect())
     }
 }
