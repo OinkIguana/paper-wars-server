@@ -10,6 +10,7 @@ mod email;
 mod map;
 mod map_version;
 mod universe;
+mod universe_version;
 
 use account::Account;
 use archetype::Archetype;
@@ -19,6 +20,7 @@ use email::Email;
 use map::Map;
 use map_version::MapVersion;
 use universe::Universe;
+use universe_version::UniverseVersion;
 
 pub struct Query;
 

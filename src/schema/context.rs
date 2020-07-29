@@ -13,6 +13,7 @@ pub struct Context {
     map_loader: Loader<Uuid, Map>,
     map_version_loader: Loader<(Uuid, i32), MapVersion>,
     universe_loader: Loader<Uuid, Universe>,
+    universe_version_loader: Loader<(Uuid, i32), UniverseVersion>,
 }
 
 impl Context {
@@ -26,7 +27,8 @@ impl Context {
             login_loader: Loader::new(database.clone()),
             map_loader: Loader::new(database.clone()),
             map_version_loader: Loader::new(database.clone()),
-            universe_loader: Loader::new(database),
+            universe_loader: Loader::new(database.clone()),
+            universe_version_loader: Loader::new(database),
         }
     }
 
@@ -64,6 +66,10 @@ impl Context {
 
     pub fn universes(&self) -> &Loader<Uuid, Universe> {
         &self.universe_loader
+    }
+
+    pub fn universe_versions(&self) -> &Loader<(Uuid, i32), UniverseVersion> {
+        &self.universe_version_loader
     }
 }
 

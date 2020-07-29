@@ -15,6 +15,7 @@ mod email;
 mod map;
 mod map_version;
 mod universe;
+mod universe_version;
 
 pub use account::*;
 pub use universe::*;

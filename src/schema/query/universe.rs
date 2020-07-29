@@ -1,4 +1,4 @@
-use super::{Archetype, Context, Contributor, Map};
+use super::{Archetype, Context, Contributor, Map, UniverseVersion};
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use juniper::FieldResult;
@@ -69,6 +69,17 @@ impl Universe {
             .await
             .into_iter()
             .map(|map| Map::new(map.id))
+            .collect())
+    }
+
+    /// Versions of this universe.
+    async fn versions(&self, context: &Context) -> FieldResult<Vec<UniverseVersion>> {
+        Ok(context
+            .universe_versions()
+            .for_universe(&self.id)
+            .await
+            .into_iter()
+            .map(|version| UniverseVersion::new(version.universe_id, version.version))
             .collect())
     }
 }
