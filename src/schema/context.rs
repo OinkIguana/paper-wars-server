@@ -9,6 +9,7 @@ pub struct Context {
     archetype_version_loader: Loader<(Uuid, i32), ArchetypeVersion>,
     contributor_loader: Loader<(Uuid, Uuid), Contributor>,
     email_loader: Loader<CiString, Email>,
+    entity_loader: Loader<Uuid, Entity>,
     game_loader: Loader<Uuid, Game>,
     login_loader: Loader<Uuid, Login>,
     map_loader: Loader<Uuid, Map>,
@@ -28,6 +29,7 @@ impl Context {
             archetype_version_loader: Loader::new(database.clone()),
             contributor_loader: Loader::new(database.clone()),
             email_loader: Loader::new(database.clone()),
+            entity_loader: Loader::new(database.clone()),
             game_loader: Loader::new(database.clone()),
             login_loader: Loader::new(database.clone()),
             map_loader: Loader::new(database.clone()),
@@ -58,6 +60,10 @@ impl Context {
 
     pub fn emails(&self) -> &Loader<CiString, Email> {
         &self.email_loader
+    }
+
+    pub fn entities(&self) -> &Loader<Uuid, Entity> {
+        &self.entity_loader
     }
 
     pub fn games(&self) -> &Loader<Uuid, Game> {

@@ -12,6 +12,7 @@ mod archetype;
 mod archetype_version;
 mod contributor;
 mod email;
+mod entity;
 mod map;
 mod map_version;
 mod player;

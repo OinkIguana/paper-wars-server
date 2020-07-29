@@ -1,4 +1,4 @@
-use super::{Context, UniverseVersion, MapVersion, Player};
+use super::{Context, UniverseVersion, MapVersion, Player, Entity};
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use juniper::FieldResult;
@@ -79,6 +79,17 @@ impl Game {
             .await
             .into_iter()
             .map(|player| Player::new(player.game_id, player.account_id))
+            .collect())
+    }
+
+    /// The entities that currently exist in game.
+    async fn entities(&self, context: &Context) -> FieldResult<Vec<Entity>> {
+        Ok(context
+            .entities()
+            .for_game(&self.load(context).await?.id)
+            .await
+            .into_iter()
+            .map(|entity| Entity::new(entity.id))
             .collect())
     }
 }
