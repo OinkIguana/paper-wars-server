@@ -53,14 +53,14 @@ macro_rules! batch_fn {
 
 #[macro_export]
 macro_rules! join {
-    ($table:ident => $name:ident ($key:ident: $id:ty) -> $model:ty) => {
-        pub async fn $name(&self, $key: &$id) -> Vec<$model> {
+    ($table:ident => $name:ident ($($key:ident: $id:ty),+) -> $model:ty) => {
+        pub async fn $name(&self, $($key: &$id),+) -> Vec<$model> {
             use diesel::prelude::*;
 
             let load_result: anyhow::Result<Vec<$model>> = tokio::task::block_in_place(|| {
                 let conn = self.database.connection()?;
                 Ok(data::$table::table
-                    .filter(data::$table::$key.eq($key))
+                    $( .filter(data::$table::$key.eq($key)) )+
                     .load(&conn)?)
             });
 

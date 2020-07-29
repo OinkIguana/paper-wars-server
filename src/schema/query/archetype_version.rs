@@ -14,6 +14,14 @@ impl ArchetypeVersion {
         Self { archetype_id, version }
     }
 
+    async fn load_archetype(&self, context: &Context) -> anyhow::Result<data::Archetype> {
+        context
+            .archetypes()
+            .load(self.archetype_id)
+            .await
+            .ok_or_else(|| anyhow!("Archetype {} does not exist", self.archetype_id))
+    }
+
     async fn load(&self, context: &Context) -> anyhow::Result<data::ArchetypeVersion> {
         context
             .archetype_versions()
@@ -25,6 +33,16 @@ impl ArchetypeVersion {
 
 #[juniper::graphql_object(Context = Context)]
 impl ArchetypeVersion {
+    /// The ID of the archetype.
+    async fn id(&self, context: &Context) -> FieldResult<Uuid> {
+        Ok(self.load_archetype(context).await?.id)
+    }
+
+    /// The development name of the archetype. This should not be used in game.
+    async fn name(&self, context: &Context) -> FieldResult<String> {
+        Ok(self.load_archetype(context).await?.name.to_owned())
+    }
+
     /// The version number.
     async fn version(&self, context: &Context) -> FieldResult<i32> {
         Ok(self.load(context).await?.version)

@@ -16,6 +16,8 @@ mod map;
 mod map_version;
 mod universe;
 mod universe_version;
+mod universe_version_archetype;
+mod universe_version_map;
 
 pub use account::*;
 pub use universe::*;

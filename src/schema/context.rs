@@ -14,6 +14,8 @@ pub struct Context {
     map_version_loader: Loader<(Uuid, i32), MapVersion>,
     universe_loader: Loader<Uuid, Universe>,
     universe_version_loader: Loader<(Uuid, i32), UniverseVersion>,
+    universe_version_archetype_loader: Loader<(Uuid, i32, Uuid), UniverseVersionArchetype>,
+    universe_version_map_loader: Loader<(Uuid, i32, Uuid), UniverseVersionMap>,
 }
 
 impl Context {
@@ -28,7 +30,9 @@ impl Context {
             map_loader: Loader::new(database.clone()),
             map_version_loader: Loader::new(database.clone()),
             universe_loader: Loader::new(database.clone()),
-            universe_version_loader: Loader::new(database),
+            universe_version_loader: Loader::new(database.clone()),
+            universe_version_archetype_loader: Loader::new(database.clone()),
+            universe_version_map_loader: Loader::new(database),
         }
     }
 
@@ -70,6 +74,14 @@ impl Context {
 
     pub fn universe_versions(&self) -> &Loader<(Uuid, i32), UniverseVersion> {
         &self.universe_version_loader
+    }
+
+    pub fn universe_version_archetypes(&self) -> &Loader<(Uuid, i32, Uuid), UniverseVersionArchetype> {
+        &self.universe_version_archetype_loader
+    }
+
+    pub fn universe_version_maps(&self) -> &Loader<(Uuid, i32, Uuid), UniverseVersionMap> {
+        &self.universe_version_map_loader
     }
 }
 

@@ -14,6 +14,14 @@ impl MapVersion {
         Self { map_id, version }
     }
 
+    async fn load_map(&self, context: &Context) -> anyhow::Result<data::Map> {
+        context
+            .maps()
+            .load(self.map_id)
+            .await
+            .ok_or_else(|| anyhow!("Map {} does not exist", self.map_id))
+    }
+
     async fn load(&self, context: &Context) -> anyhow::Result<data::MapVersion> {
         context
             .map_versions()
@@ -25,6 +33,16 @@ impl MapVersion {
 
 #[juniper::graphql_object(Context = Context)]
 impl MapVersion {
+    /// The ID of the map.
+    async fn id(&self, context: &Context) -> FieldResult<Uuid> {
+        Ok(self.load_map(context).await?.id)
+    }
+
+    /// The development name of the map. This should not be used in game.
+    async fn name(&self, context: &Context) -> FieldResult<String> {
+        Ok(self.load_map(context).await?.name.to_owned())
+    }
+
     /// The version number.
     async fn version(&self, context: &Context) -> FieldResult<i32> {
         Ok(self.load(context).await?.version)
