@@ -1,4 +1,4 @@
-use super::{Context, UniverseVersion, MapVersion};
+use super::{Context, UniverseVersion, MapVersion, Player};
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use juniper::FieldResult;
@@ -69,5 +69,16 @@ impl Game {
     /// When this game was started.
     async fn created_at(&self, context: &Context) -> FieldResult<DateTime<Utc>> {
         Ok(self.load(context).await?.created_at)
+    }
+
+    /// The players in this game.
+    async fn players(&self, context: &Context) -> FieldResult<Vec<Player>> {
+        Ok(context
+            .players()
+            .for_game(&self.load(context).await?.id)
+            .await
+            .into_iter()
+            .map(|player| Player::new(player.game_id, player.account_id))
+            .collect())
     }
 }

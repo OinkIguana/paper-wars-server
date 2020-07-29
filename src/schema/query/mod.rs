@@ -10,6 +10,7 @@ mod email;
 mod game;
 mod map;
 mod map_version;
+mod player;
 mod universe;
 mod universe_version;
 
@@ -21,6 +22,7 @@ use email::Email;
 use game::Game;
 use map::Map;
 use map_version::MapVersion;
+use player::Player;
 use universe::Universe;
 use universe_version::UniverseVersion;
 
