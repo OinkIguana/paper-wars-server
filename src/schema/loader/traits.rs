@@ -1,4 +1,4 @@
-pub(super) trait BatchFnItem {
+pub trait BatchFnItem {
     type Key;
     fn key(&self) -> Self::Key;
 }

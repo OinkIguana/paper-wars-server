@@ -1,13 +1,15 @@
 use super::Database;
+use diesel::prelude::*;
+use data::{Searchable, TryAsQuery};
 use dataloader::BatchFn;
 use std::fmt::Debug;
 use std::hash::Hash;
+use uuid::Uuid;
 
 mod traits;
 #[macro_use]
 mod macros;
 
-mod account;
 mod archetype;
 mod archetype_version;
 mod contributor;
@@ -16,13 +18,9 @@ mod entity;
 mod map;
 mod map_version;
 mod player;
-mod universe;
 mod universe_version;
 mod universe_version_archetype;
 mod universe_version_map;
-
-pub use account::*;
-pub use universe::*;
 
 pub struct Loader<K, T>
 where
@@ -71,5 +69,24 @@ where
     }
 }
 
-batch_fn!(logins => data::Login { account_id: uuid::Uuid });
-batch_fn!(games => data::Game { id: uuid::Uuid });
+impl<K, T> Loader<K, T>
+where
+    K: Hash + Eq + Clone + Debug,
+    T: Clone + Debug + Searchable + traits::BatchFnItem<Key = K>,
+    Database: BatchFn<K, Option<T>>,
+{
+    pub async fn search(&self, search:& T::Search) -> anyhow::Result<Vec<T>> {
+        let items = tokio::task::block_in_place(|| {
+            let conn = self.database.connection()?;
+            let query = search.try_as_query()?;
+            anyhow::Result::<Vec<T>>::Ok(query.load(&conn)?)
+        })?;
+        self.prime_many(items.clone()).await;
+        Ok(items)
+    }
+}
+
+batch_fn!(accounts => data::Account { id: Uuid });
+batch_fn!(universes => data::Universe { id: Uuid });
+batch_fn!(logins => data::Login { account_id: Uuid });
+batch_fn!(games => data::Game { id: Uuid });

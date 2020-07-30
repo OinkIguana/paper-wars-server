@@ -1,4 +1,4 @@
-use super::{Context, Contributor, Email, Game};
+use super::{Context, Contributor, Email, Game, Pagination, QueryWrapper};
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use juniper::FieldResult;
@@ -8,10 +8,9 @@ pub struct Account {
     id: Uuid,
 }
 
-impl Account {
-    pub fn new(id: Uuid) -> Self {
-        Self { id }
-    }
+#[async_trait::async_trait]
+impl QueryWrapper for Account {
+    type Model = data::Account;
 
     async fn load(&self, context: &Context) -> anyhow::Result<data::Account> {
         context
@@ -19,6 +18,12 @@ impl Account {
             .load(self.id)
             .await
             .ok_or_else(|| anyhow!("Account {} does not exist", self.id))
+    }
+}
+
+impl Account {
+    pub fn new(id: Uuid) -> Self {
+        Self { id }
     }
 }
 
@@ -71,5 +76,24 @@ impl Account {
             .into_iter()
             .map(|player| Game::new(player.game_id))
             .collect())
+    }
+}
+
+#[juniper::graphql_object(Context = Context, name = "AccountPagination")]
+impl Pagination<Account> {
+    async fn items(&self) -> &[Account] {
+        self.items().await
+    }
+
+    async fn total(&self) -> i32 {
+        self.total().await
+    }
+
+    async fn start(&self, context: &Context) -> juniper::FieldResult<Option<String>> {
+        self.start(context).await
+    }
+
+    async fn end(&self, context: &Context) -> juniper::FieldResult<Option<String>> {
+        self.end(context).await
     }
 }

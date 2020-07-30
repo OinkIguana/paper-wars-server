@@ -1,6 +1,13 @@
-use super::loader::{AccountSearch, UniverseSearch};
 use super::Context;
+use juniper::FieldResult;
 use uuid::Uuid;
+
+mod traits;
+pub use traits::QueryWrapper;
+
+#[macro_use]
+mod pagination;
+use pagination::Pagination;
 
 mod account;
 mod archetype;
@@ -37,41 +44,46 @@ impl Query {
         1
     }
 
-    /// Game universes, created by users.
-    async fn universes(
-        context: &Context,
-        universes: Option<Vec<Uuid>>,
-        search: Option<UniverseSearch>,
-    ) -> Vec<Option<Universe>> {
-        if let Some(universes) = universes {
-            return universes.into_iter().map(Universe::new).map(Some).collect();
-        }
-        context
-            .universes()
-            .search(search)
-            .await
-            .into_iter()
-            .map(|universe| Universe::new(universe.id))
-            .map(Some)
-            .collect()
+    /// Look up an account.
+    async fn account(id: Uuid) -> Account {
+        Account::new(id)
     }
 
-    /// User accounts.
+    /// Look up a game.
+    async fn game(id: Uuid) -> Game {
+        Game::new(id)
+    }
+
+    /// Look up a universe.
+    async fn universe(id: Uuid) -> Universe {
+        Universe::new(id)
+    }
+
+    /// Search for universes.
+    async fn universes(
+        context: &Context,
+        search: data::UniverseSearch,
+    ) -> FieldResult<Pagination<Universe>> {
+        let items = context
+            .universes()
+            .search(&search)
+            .await?
+            .into_iter()
+            .map(|universe| Universe::new(universe.id));
+        Ok(Pagination::new(search, items))
+    }
+
+    /// Search for users.
     async fn accounts(
         context: &Context,
-        accounts: Option<Vec<Uuid>>,
-        search: Option<AccountSearch>,
-    ) -> Vec<Option<Account>> {
-        if let Some(accounts) = accounts {
-            return accounts.into_iter().map(Account::new).map(Some).collect();
-        }
-        context
+        search: data::AccountSearch,
+    ) -> FieldResult<Pagination<Account>> {
+        let items = context
             .accounts()
-            .search(search)
-            .await
+            .search(&search)
+            .await?
             .into_iter()
-            .map(|account| Account::new(account.id))
-            .map(Some)
-            .collect()
+            .map(|account| Account::new(account.id));
+        Ok(Pagination::new(search, items))
     }
 }

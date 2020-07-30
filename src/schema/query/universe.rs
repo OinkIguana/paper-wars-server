@@ -1,4 +1,4 @@
-use super::{Archetype, Context, Contributor, Map, UniverseVersion};
+use super::{Pagination, Archetype, Context, Contributor, Map, UniverseVersion, QueryWrapper};
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use juniper::FieldResult;
@@ -8,17 +8,22 @@ pub struct Universe {
     id: Uuid,
 }
 
-impl Universe {
-    pub fn new(id: Uuid) -> Self {
-        Self { id }
-    }
+#[async_trait::async_trait]
+impl QueryWrapper for Universe {
+    type Model = data::Universe;
 
-    async fn load(&self, context: &Context) -> anyhow::Result<data::Universe> {
+    async fn load(&self, context: &Context) -> anyhow::Result<Self::Model> {
         context
             .universes()
             .load(self.id)
             .await
             .ok_or_else(|| anyhow!("Universe {} does not exist", self.id))
+    }
+}
+
+impl Universe {
+    pub fn new(id: Uuid) -> Self {
+        Self { id }
     }
 }
 
@@ -81,5 +86,24 @@ impl Universe {
             .into_iter()
             .map(|version| UniverseVersion::new(version.universe_id, version.version))
             .collect())
+    }
+}
+
+#[juniper::graphql_object(Context = Context, name = "UniversePagination")]
+impl Pagination<Universe> {
+    async fn items(&self) -> &[Universe] {
+        self.items().await
+    }
+
+    async fn total(&self) -> i32 {
+        self.total().await
+    }
+
+    async fn start(&self, context: &Context) -> juniper::FieldResult<Option<String>> {
+        self.start(context).await
+    }
+
+    async fn end(&self, context: &Context) -> juniper::FieldResult<Option<String>> {
+        self.end(context).await
     }
 }
