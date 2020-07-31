@@ -54,9 +54,18 @@ impl Query {
         Game::new(id)
     }
 
-    /// Look up a universe.
-    async fn universe(id: Uuid) -> Universe {
-        Universe::new(id)
+    /// Look up a version of a universe. If version is not specified, looks up the current (released) version.
+    async fn universe(&self, context: &Context, id: Uuid, version: Option<i32>) -> FieldResult<UniverseVersion> {
+        let version = match version {
+            Some(version) => version,
+            None => context
+                .universe_versions()
+                .load_current(id, false)
+                .await?
+                .map(|version| version.version)
+                .unwrap_or(0),
+        };
+        Ok(UniverseVersion::new(id, version))
     }
 
     /// Search for universes.

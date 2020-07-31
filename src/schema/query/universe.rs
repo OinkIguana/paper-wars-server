@@ -87,6 +87,16 @@ impl Universe {
             .map(|version| UniverseVersion::new(version.universe_id, version.version))
             .collect())
     }
+
+    /// The highest version number for this universe.
+    #[graphql(arguments(unreleased(default = false)))]
+    async fn version_number(&self, context: &Context, unreleased: bool) -> FieldResult<Option<i32>> {
+        Ok(context
+            .universe_versions()
+            .load_current(self.load(context).await?.id, unreleased)
+            .await?
+            .map(|version| version.version))
+    }
 }
 
 #[juniper::graphql_object(Context = Context, name = "UniversePagination")]

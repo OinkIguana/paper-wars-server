@@ -18,13 +18,15 @@ macro_rules! batch_fn {
                         .iter()
                         .cloned()
                         .map(|($($id),+): ($($key),+)| -> Box::<dyn diesel::BoxableExpression<data::$table::table, diesel::pg::Pg, SqlType = diesel::sql_types::Bool> + Send> {
-                            vec![$(
+                            let mut parts = vec![$(
                                 Box::new(data::$table::$id.eq($id))
                                     as Box::<dyn diesel::BoxableExpression<data::$table::table, diesel::pg::Pg, SqlType = diesel::sql_types::Bool> + Send>
-                            ),+]
+                            ),+];
+
+                            let first = parts.pop().unwrap();
+                            parts
                                 .into_iter()
-                                .fold_first(|a, b| Box::new(a.and(b)))
-                                .unwrap()
+                                .fold(first, |a, b| Box::new(a.and(b)))
                         })
                         .fold(
                             data::$table::table.into_boxed(),
