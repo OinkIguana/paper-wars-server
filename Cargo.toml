@@ -24,8 +24,8 @@ features = ["postgres", "r2d2", "uuid", "chrono", "serde_json"]
 git = "https://github.com/diesel-rs/diesel"
 
 [dependencies.diesel-citext]
-branch = "master"
 git = "https://github.com/foxfriends/diesel-citext"
+rev = "914c3f3"
 
 [dependencies.juniper]
 branch = "master"
