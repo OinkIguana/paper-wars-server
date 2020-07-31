@@ -6,6 +6,7 @@ use env_logger;
 use rocket::{response::content, State};
 use std::env;
 
+mod jwt;
 mod schema;
 
 use schema::{Context, Database, Schema};

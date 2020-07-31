@@ -55,7 +55,11 @@ impl Query {
     }
 
     /// Look up a version of a universe. If version is not specified, looks up the current (released) version.
-    async fn universe(&self, context: &Context, id: Uuid, version: Option<i32>) -> FieldResult<UniverseVersion> {
+    async fn universe(
+        context: &Context,
+        id: Uuid,
+        version: Option<i32>,
+    ) -> FieldResult<UniverseVersion> {
         let version = match version {
             Some(version) => version,
             None => context

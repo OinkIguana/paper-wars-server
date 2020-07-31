@@ -1,4 +1,4 @@
-use super::{Context, ArchetypeVersion, MapVersion};
+use super::{ArchetypeVersion, Context, MapVersion};
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use juniper::FieldResult;
@@ -11,7 +11,10 @@ pub struct UniverseVersion {
 
 impl UniverseVersion {
     pub fn new(universe_id: Uuid, version: i32) -> Self {
-        Self { universe_id, version }
+        Self {
+            universe_id,
+            version,
+        }
     }
 
     async fn load_universe(&self, context: &Context) -> anyhow::Result<data::Universe> {
@@ -27,7 +30,13 @@ impl UniverseVersion {
             .universe_versions()
             .load((self.universe_id, self.version))
             .await
-            .ok_or_else(|| anyhow!("Universe {} version {} does not exist", self.universe_id, self.version))
+            .ok_or_else(|| {
+                anyhow!(
+                    "Universe {} version {} does not exist",
+                    self.universe_id,
+                    self.version
+                )
+            })
     }
 }
 

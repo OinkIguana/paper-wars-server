@@ -18,5 +18,5 @@ pub use subscription::Subscription;
 pub type Schema = RootNode<'static, Query, Mutation, Subscription>;
 
 pub fn create() -> Schema {
-    Schema::new(Query, Mutation::new(), Subscription::new())
+    Schema::new(Query, Mutation, Subscription::new())
 }

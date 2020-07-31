@@ -10,7 +10,10 @@ pub struct Player {
 
 impl Player {
     pub fn new(game_id: Uuid, account_id: Uuid) -> Self {
-        Self { game_id, account_id }
+        Self {
+            game_id,
+            account_id,
+        }
     }
 
     async fn load(&self, context: &Context) -> anyhow::Result<data::Player> {
@@ -18,7 +21,13 @@ impl Player {
             .players()
             .load((self.game_id, self.account_id))
             .await
-            .ok_or_else(|| anyhow!("Game {} player {} does not exist", self.game_id, self.account_id))
+            .ok_or_else(|| {
+                anyhow!(
+                    "Game {} player {} does not exist",
+                    self.game_id,
+                    self.account_id
+                )
+            })
     }
 
     async fn load_account(&self, context: &Context) -> anyhow::Result<data::Account> {

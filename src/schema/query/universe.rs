@@ -1,4 +1,4 @@
-use super::{Pagination, Archetype, Context, Contributor, Map, UniverseVersion, QueryWrapper};
+use super::{Archetype, Context, Contributor, Map, Pagination, QueryWrapper, UniverseVersion};
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use juniper::FieldResult;
@@ -90,7 +90,11 @@ impl Universe {
 
     /// The highest version number for this universe.
     #[graphql(arguments(unreleased(default = false)))]
-    async fn version_number(&self, context: &Context, unreleased: bool) -> FieldResult<Option<i32>> {
+    async fn version_number(
+        &self,
+        context: &Context,
+        unreleased: bool,
+    ) -> FieldResult<Option<i32>> {
         Ok(context
             .universe_versions()
             .load_current(self.load(context).await?.id, unreleased)

@@ -1,4 +1,4 @@
-use super::{Context, ArchetypeVersion, Player};
+use super::{ArchetypeVersion, Context, Player};
 use anyhow::anyhow;
 use juniper::FieldResult;
 use uuid::Uuid;
@@ -20,7 +20,11 @@ impl Entity {
             .ok_or_else(|| anyhow!("Entity {} does not exist", self.id))
     }
 
-    async fn load_game(&self, context: &Context, entity: &data::Entity) -> anyhow::Result<data::Game> {
+    async fn load_game(
+        &self,
+        context: &Context,
+        entity: &data::Entity,
+    ) -> anyhow::Result<data::Game> {
         context
             .games()
             .load(entity.game_id)
@@ -44,14 +48,26 @@ impl Entity {
             .universe_version_archetypes()
             .load((game.universe_id, game.universe_version, entity.archetype_id))
             .await
-            .ok_or_else(|| anyhow!("Universe {} version {} archetype {} does not exist", game.universe_id, game.universe_version, entity.archetype_id))?;
-        Ok(ArchetypeVersion::new(version.archetype_id, version.archetype_version))
+            .ok_or_else(|| {
+                anyhow!(
+                    "Universe {} version {} archetype {} does not exist",
+                    game.universe_id,
+                    game.universe_version,
+                    entity.archetype_id
+                )
+            })?;
+        Ok(ArchetypeVersion::new(
+            version.archetype_id,
+            version.archetype_version,
+        ))
     }
 
     /// The owner of this entity.
     async fn player(&self, context: &Context) -> FieldResult<Option<Player>> {
         let entity = self.load(context).await?;
-        Ok(entity.account_id.map(|account_id| Player::new(entity.game_id, account_id)))
+        Ok(entity
+            .account_id
+            .map(|account_id| Player::new(entity.game_id, account_id)))
     }
 
     /// The game state that is specific to this entity.

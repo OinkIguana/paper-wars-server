@@ -1,4 +1,4 @@
-use super::{Context, UniverseVersion, MapVersion, Player, Entity};
+use super::{Context, Entity, MapVersion, Player, UniverseVersion};
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use juniper::FieldResult;
@@ -41,7 +41,13 @@ impl Game {
             .universe_versions()
             .load((game.universe_id, game.universe_version))
             .await
-            .ok_or_else(|| anyhow!("Universe {} version {} does not exist", game.universe_id, game.universe_version))?;
+            .ok_or_else(|| {
+                anyhow!(
+                    "Universe {} version {} does not exist",
+                    game.universe_id,
+                    game.universe_version
+                )
+            })?;
         Ok(UniverseVersion::new(universe.universe_id, universe.version))
     }
 
@@ -52,7 +58,14 @@ impl Game {
             .universe_version_maps()
             .load((game.universe_id, game.universe_version, game.map_id))
             .await
-            .ok_or_else(|| anyhow!("Universe {} version {} map {} does not exist", game.universe_id, game.universe_version, game.map_id))?;
+            .ok_or_else(|| {
+                anyhow!(
+                    "Universe {} version {} map {} does not exist",
+                    game.universe_id,
+                    game.universe_version,
+                    game.map_id
+                )
+            })?;
         Ok(MapVersion::new(map.map_id, map.map_version))
     }
 

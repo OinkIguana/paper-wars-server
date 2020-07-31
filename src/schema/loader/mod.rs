@@ -1,7 +1,7 @@
 use super::Database;
-use diesel::prelude::*;
 use data::{Searchable, TryAsQuery};
 use dataloader::BatchFn;
+use diesel::prelude::*;
 use std::fmt::Debug;
 use std::hash::Hash;
 use uuid::Uuid;
@@ -10,11 +10,13 @@ mod traits;
 #[macro_use]
 mod macros;
 
+mod account;
 mod archetype;
 mod archetype_version;
 mod contributor;
 mod email;
 mod entity;
+mod login;
 mod map;
 mod map_version;
 mod player;
@@ -75,7 +77,7 @@ where
     T: Clone + Debug + Searchable + traits::BatchFnItem<Key = K>,
     Database: BatchFn<K, Option<T>>,
 {
-    pub async fn search(&self, search:& T::Search) -> anyhow::Result<Vec<T>> {
+    pub async fn search(&self, search: &T::Search) -> anyhow::Result<Vec<T>> {
         let items = tokio::task::block_in_place(|| {
             let conn = self.database.connection()?;
             let query = search.try_as_query()?;
@@ -86,7 +88,5 @@ where
     }
 }
 
-batch_fn!(accounts => data::Account { id: Uuid });
 batch_fn!(universes => data::Universe { id: Uuid });
-batch_fn!(logins => data::Login { account_id: Uuid });
 batch_fn!(games => data::Game { id: Uuid });

@@ -15,7 +15,10 @@ where
     T: QueryWrapper,
     T::Model: Searchable,
 {
-    pub fn new(search: <T::Model as Searchable>::Search, items: impl IntoIterator<Item = T>) -> Self {
+    pub fn new(
+        search: <T::Model as Searchable>::Search,
+        items: impl IntoIterator<Item = T>,
+    ) -> Self {
         Self {
             search,
             items: items.into_iter().collect(),
@@ -43,6 +46,10 @@ where
             Some(item) => item,
             None => return Ok(None),
         };
-        Ok(Some(item.load(context).await?.cursor(&self.search, self.items.len())))
+        Ok(Some(
+            item.load(context)
+                .await?
+                .cursor(&self.search, self.items.len()),
+        ))
     }
 }

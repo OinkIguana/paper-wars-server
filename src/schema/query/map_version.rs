@@ -27,7 +27,13 @@ impl MapVersion {
             .map_versions()
             .load((self.map_id, self.version))
             .await
-            .ok_or_else(|| anyhow!("Map {} version {} does not exist", self.map_id, self.version))
+            .ok_or_else(|| {
+                anyhow!(
+                    "Map {} version {} does not exist",
+                    self.map_id,
+                    self.version
+                )
+            })
     }
 }
 

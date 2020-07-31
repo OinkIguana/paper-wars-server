@@ -11,7 +11,10 @@ pub struct ArchetypeVersion {
 
 impl ArchetypeVersion {
     pub fn new(archetype_id: Uuid, version: i32) -> Self {
-        Self { archetype_id, version }
+        Self {
+            archetype_id,
+            version,
+        }
     }
 
     async fn load_archetype(&self, context: &Context) -> anyhow::Result<data::Archetype> {
@@ -27,7 +30,13 @@ impl ArchetypeVersion {
             .archetype_versions()
             .load((self.archetype_id, self.version))
             .await
-            .ok_or_else(|| anyhow!("Archetype {} version {} does not exist", self.archetype_id, self.version))
+            .ok_or_else(|| {
+                anyhow!(
+                    "Archetype {} version {} does not exist",
+                    self.archetype_id,
+                    self.version
+                )
+            })
     }
 }
 
