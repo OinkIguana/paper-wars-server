@@ -8,7 +8,7 @@ pub struct Mutation;
 #[juniper::graphql_object(Context = Context)]
 impl Mutation {
     /// Attempt to sign in to the API.
-    async fn sign_in(
+    async fn authenticate(
         context: &Context,
         username: Option<String>,
         email: Option<String>,
@@ -28,5 +28,19 @@ impl Mutation {
         } else {
             Err(anyhow!("Incorrect password").into())
         }
+    }
+
+    /// When already signed in, renew the auth token to extend its expiry.
+    async fn renew_authentication(context: &Context) -> FieldResult<Option<String>> {
+        let account_id = match context.authenticated_account() {
+            Some(account_id) => account_id,
+            None => return Ok(None),
+        };
+        let account = context
+            .accounts()
+            .load(account_id)
+            .await
+            .unwrap();
+        Ok(Some(jwt::encode(account)?))
     }
 }

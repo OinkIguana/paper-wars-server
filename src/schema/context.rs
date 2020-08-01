@@ -44,6 +44,10 @@ impl Context {
         }
     }
 
+    pub fn authenticated_account(&self) -> Option<Uuid> {
+        self.authenticated_account
+    }
+
     pub fn accounts(&self) -> &Loader<Uuid, Account> {
         &self.account_loader
     }
