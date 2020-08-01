@@ -9,6 +9,7 @@ use std::env;
 mod jwt;
 mod schema;
 
+use jwt::AuthenticatedAccount;
 use schema::{Context, Database, Schema};
 
 #[rocket::get("/")]
@@ -20,10 +21,11 @@ fn graphiql() -> content::Html<String> {
 async fn get_graphql_handler<'a>(
     database: State<'a, Database>,
     schema: State<'a, Schema>,
+    account_id: Option<AuthenticatedAccount>,
     request: juniper_rocket_async::GraphQLRequest,
 ) -> juniper_rocket_async::GraphQLResponse {
     request
-        .execute(&schema, &Context::new(database.clone()))
+        .execute(&schema, &Context::new(database.clone(), account_id.map(Into::into)))
         .await
 }
 
@@ -31,10 +33,11 @@ async fn get_graphql_handler<'a>(
 async fn post_graphql_handler<'a>(
     database: State<'a, Database>,
     schema: State<'a, Schema>,
+    account_id: Option<AuthenticatedAccount>,
     request: juniper_rocket_async::GraphQLRequest,
 ) -> juniper_rocket_async::GraphQLResponse {
     request
-        .execute(&schema, &Context::new(database.clone()))
+        .execute(&schema, &Context::new(database.clone(), account_id.map(Into::into)))
         .await
 }
 

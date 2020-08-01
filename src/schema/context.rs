@@ -4,6 +4,7 @@ use diesel_citext::types::CiString;
 use uuid::Uuid;
 
 pub struct Context {
+    authenticated_account: Option<Uuid>,
     account_loader: Loader<Uuid, Account>,
     archetype_loader: Loader<Uuid, Archetype>,
     archetype_version_loader: Loader<(Uuid, i32), ArchetypeVersion>,
@@ -22,8 +23,9 @@ pub struct Context {
 }
 
 impl Context {
-    pub fn new(database: Database) -> Self {
+    pub fn new(database: Database, authenticated_account: Option<Uuid>) -> Self {
         Self {
+            authenticated_account,
             account_loader: Loader::new(database.clone()),
             archetype_loader: Loader::new(database.clone()),
             archetype_version_loader: Loader::new(database.clone()),
