@@ -22,18 +22,18 @@ mod player;
 mod universe;
 mod universe_version;
 
-use account::Account;
-use archetype::Archetype;
-use archetype_version::ArchetypeVersion;
-use contributor::Contributor;
-use email::Email;
-use entity::Entity;
-use game::Game;
-use map::Map;
-use map_version::MapVersion;
-use player::Player;
-use universe::Universe;
-use universe_version::UniverseVersion;
+pub use account::Account;
+pub use archetype::Archetype;
+pub use archetype_version::ArchetypeVersion;
+pub use contributor::Contributor;
+pub use email::Email;
+pub use entity::Entity;
+pub use game::Game;
+pub use map::Map;
+pub use map_version::MapVersion;
+pub use player::Player;
+pub use universe::Universe;
+pub use universe_version::UniverseVersion;
 
 pub struct Query;
 

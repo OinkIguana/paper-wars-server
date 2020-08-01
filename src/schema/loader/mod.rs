@@ -56,8 +56,13 @@ where
         self.loader.load_many(keys).await
     }
 
-    async fn prime(&self, key: K, value: Option<T>) {
-        self.loader.prime(key, value).await;
+    pub async fn prime(&self, item: T)
+    where
+        T: traits::BatchFnItem<Key = K>,
+    {
+        self.loader
+            .prime(traits::BatchFnItem::key(&item), Some(item))
+            .await
     }
 
     async fn prime_many(&self, items: impl IntoIterator<Item = T>)
@@ -65,7 +70,8 @@ where
         T: traits::BatchFnItem<Key = K>,
     {
         for item in items {
-            self.prime(traits::BatchFnItem::key(&item), Some(item))
+            self.loader
+                .prime(traits::BatchFnItem::key(&item), Some(item))
                 .await;
         }
     }

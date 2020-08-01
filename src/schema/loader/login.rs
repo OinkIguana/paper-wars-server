@@ -1,4 +1,4 @@
-use super::{traits::BatchFnItem, Loader};
+use super::Loader;
 use data::{accounts, logins, Login};
 use diesel::prelude::*;
 use diesel_citext::prelude::*;
@@ -20,7 +20,7 @@ impl Loader<Uuid, Login> {
             })?;
 
         if let Some(login) = &login {
-            self.prime(login.key(), Some(login.clone())).await;
+            self.prime(login.clone()).await;
         }
         Ok(login)
     }
@@ -36,7 +36,7 @@ impl Loader<Uuid, Login> {
             })?;
 
         if let Some(login) = &login {
-            self.prime(login.key(), Some(login.clone())).await;
+            self.prime(login.clone()).await;
         }
         Ok(login)
     }

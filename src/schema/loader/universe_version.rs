@@ -1,4 +1,4 @@
-use super::{traits::BatchFnItem, Loader};
+use super::Loader;
 use data::{universe_versions, UniverseVersion};
 use diesel::dsl::*;
 use diesel::prelude::*;
@@ -36,7 +36,7 @@ impl Loader<(Uuid, i32), UniverseVersion> {
             })?;
 
         if let Some(version) = &version {
-            self.prime(version.key(), Some(version.clone())).await;
+            self.prime(version.clone()).await;
         }
         Ok(version)
     }

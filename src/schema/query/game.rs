@@ -76,7 +76,7 @@ impl Game {
 
     /// The seed provided to the map script to generate the random aspects of the game.
     async fn map_seed(&self, context: &Context) -> FieldResult<String> {
-        Ok(hex::encode(self.load(context).await?.map_seed))
+        Ok(base64::encode(self.load(context).await?.map_seed))
     }
 
     /// The state of the game.

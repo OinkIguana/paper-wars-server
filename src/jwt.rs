@@ -16,7 +16,7 @@ struct Claims {
 
 fn secret() -> Vec<u8> {
     let secret = env::var("JWT_SECRET").unwrap();
-    hex::decode(secret).unwrap()
+    base64::decode(secret).unwrap()
 }
 
 pub fn encode(account: data::Account) -> anyhow::Result<String> {

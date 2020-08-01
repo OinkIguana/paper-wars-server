@@ -11,4 +11,13 @@ impl Database {
     pub fn connection(&self) -> anyhow::Result<DbConnection> {
         self.0.connection()
     }
+
+    /// Starts a transaction using a connection to this database. The provided function
+    /// will be called with that connection.
+    pub fn transaction<T, F>(&self, transaction: F) -> anyhow::Result<T>
+    where
+        F: FnOnce(&DbConnection) -> anyhow::Result<T>,
+    {
+        self.0.transaction(transaction)
+    }
 }

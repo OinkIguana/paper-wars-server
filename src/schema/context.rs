@@ -20,6 +20,7 @@ pub struct Context {
     universe_version_loader: Loader<(Uuid, i32), UniverseVersion>,
     universe_version_archetype_loader: Loader<(Uuid, i32, Uuid), UniverseVersionArchetype>,
     universe_version_map_loader: Loader<(Uuid, i32, Uuid), UniverseVersionMap>,
+    database: Database,
 }
 
 impl Context {
@@ -40,8 +41,18 @@ impl Context {
             universe_loader: Loader::new(database.clone()),
             universe_version_loader: Loader::new(database.clone()),
             universe_version_archetype_loader: Loader::new(database.clone()),
-            universe_version_map_loader: Loader::new(database),
+            universe_version_map_loader: Loader::new(database.clone()),
+            database,
         }
+    }
+
+    /// Starts a transaction using a connection to this database. The provided function
+    /// will be called with that connection.
+    pub fn transaction<T, F>(&self, transaction: F) -> anyhow::Result<T>
+    where
+        F: FnOnce(&DbConnection) -> anyhow::Result<T>,
+    {
+        self.database.transaction(transaction)
     }
 
     pub fn authenticated_account(&self) -> Option<Uuid> {
