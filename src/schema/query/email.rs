@@ -1,4 +1,4 @@
-use super::Context;
+use super::{Context, QueryWrapper};
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use diesel_citext::types::CiString;
@@ -8,19 +8,24 @@ pub struct Email {
     address: CiString,
 }
 
-impl Email {
-    pub fn new(address: impl Into<CiString>) -> Self {
-        Self {
-            address: address.into(),
-        }
-    }
+#[async_trait::async_trait]
+impl QueryWrapper for Email {
+    type Model = data::Email;
 
-    async fn load(&self, context: &Context) -> anyhow::Result<data::Email> {
+    async fn load(&self, context: &Context) -> anyhow::Result<Self::Model> {
         context
             .emails()
             .load(self.address.to_owned())
             .await
             .ok_or_else(|| anyhow!("Email {} does not exist", self.address))
+    }
+}
+
+impl Email {
+    pub fn new(address: impl Into<CiString>) -> Self {
+        Self {
+            address: address.into(),
+        }
     }
 }
 

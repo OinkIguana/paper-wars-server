@@ -1,4 +1,4 @@
-use super::Context;
+use super::{Context, QueryWrapper};
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use juniper::FieldResult;
@@ -7,6 +7,25 @@ use uuid::Uuid;
 pub struct ArchetypeVersion {
     archetype_id: Uuid,
     version: i32,
+}
+
+#[async_trait::async_trait]
+impl QueryWrapper for ArchetypeVersion {
+    type Model = data::ArchetypeVersion;
+
+    async fn load(&self, context: &Context) -> anyhow::Result<Self::Model> {
+        context
+            .archetype_versions()
+            .load((self.archetype_id, self.version))
+            .await
+            .ok_or_else(|| {
+                anyhow!(
+                    "Archetype {} version {} does not exist",
+                    self.archetype_id,
+                    self.version
+                )
+            })
+    }
 }
 
 impl ArchetypeVersion {
@@ -23,20 +42,6 @@ impl ArchetypeVersion {
             .load(self.archetype_id)
             .await
             .ok_or_else(|| anyhow!("Archetype {} does not exist", self.archetype_id))
-    }
-
-    async fn load(&self, context: &Context) -> anyhow::Result<data::ArchetypeVersion> {
-        context
-            .archetype_versions()
-            .load((self.archetype_id, self.version))
-            .await
-            .ok_or_else(|| {
-                anyhow!(
-                    "Archetype {} version {} does not exist",
-                    self.archetype_id,
-                    self.version
-                )
-            })
     }
 }
 

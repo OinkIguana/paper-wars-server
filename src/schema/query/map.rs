@@ -1,4 +1,4 @@
-use super::{Context, MapVersion};
+use super::{Context, MapVersion, QueryWrapper};
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use juniper::FieldResult;
@@ -8,17 +8,22 @@ pub struct Map {
     id: Uuid,
 }
 
-impl Map {
-    pub fn new(id: Uuid) -> Self {
-        Self { id }
-    }
+#[async_trait::async_trait]
+impl QueryWrapper for Map {
+    type Model = data::Map;
 
-    async fn load(&self, context: &Context) -> anyhow::Result<data::Map> {
+    async fn load(&self, context: &Context) -> anyhow::Result<Self::Model> {
         context
             .maps()
             .load(self.id)
             .await
             .ok_or_else(|| anyhow!("Map {} does not exist", self.id))
+    }
+}
+
+impl Map {
+    pub fn new(id: Uuid) -> Self {
+        Self { id }
     }
 }
 

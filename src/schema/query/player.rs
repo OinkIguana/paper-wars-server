@@ -1,4 +1,4 @@
-use super::Context;
+use super::{Context, QueryWrapper};
 use anyhow::anyhow;
 use juniper::FieldResult;
 use uuid::Uuid;
@@ -8,15 +8,11 @@ pub struct Player {
     account_id: Uuid,
 }
 
-impl Player {
-    pub fn new(game_id: Uuid, account_id: Uuid) -> Self {
-        Self {
-            game_id,
-            account_id,
-        }
-    }
+#[async_trait::async_trait]
+impl QueryWrapper for Player {
+    type Model = data::Player;
 
-    async fn load(&self, context: &Context) -> anyhow::Result<data::Player> {
+    async fn load(&self, context: &Context) -> anyhow::Result<Self::Model> {
         context
             .players()
             .load((self.game_id, self.account_id))
@@ -28,6 +24,15 @@ impl Player {
                     self.account_id
                 )
             })
+    }
+}
+
+impl Player {
+    pub fn new(game_id: Uuid, account_id: Uuid) -> Self {
+        Self {
+            game_id,
+            account_id,
+        }
     }
 
     async fn load_account(&self, context: &Context) -> anyhow::Result<data::Account> {

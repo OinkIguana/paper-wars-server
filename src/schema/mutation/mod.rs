@@ -36,11 +36,7 @@ impl Mutation {
             Some(account_id) => account_id,
             None => return Ok(None),
         };
-        let account = context
-            .accounts()
-            .load(account_id)
-            .await
-            .unwrap();
+        let account = context.accounts().load(account_id).await.unwrap();
         Ok(Some(jwt::encode(account)?))
     }
 }

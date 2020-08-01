@@ -1,4 +1,4 @@
-use super::{Context, Entity, MapVersion, Player, UniverseVersion};
+use super::{Context, Entity, MapVersion, Player, QueryWrapper, UniverseVersion};
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use juniper::FieldResult;
@@ -8,17 +8,22 @@ pub struct Game {
     id: Uuid,
 }
 
-impl Game {
-    pub fn new(id: Uuid) -> Self {
-        Self { id }
-    }
+#[async_trait::async_trait]
+impl QueryWrapper for Game {
+    type Model = data::Game;
 
-    async fn load(&self, context: &Context) -> anyhow::Result<data::Game> {
+    async fn load(&self, context: &Context) -> anyhow::Result<Self::Model> {
         context
             .games()
             .load(self.id)
             .await
             .ok_or_else(|| anyhow!("Game {} does not exist", self.id))
+    }
+}
+
+impl Game {
+    pub fn new(id: Uuid) -> Self {
+        Self { id }
     }
 }
 

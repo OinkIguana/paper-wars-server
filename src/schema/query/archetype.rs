@@ -1,4 +1,4 @@
-use super::{ArchetypeVersion, Context};
+use super::{ArchetypeVersion, Context, QueryWrapper};
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use juniper::FieldResult;
@@ -8,17 +8,22 @@ pub struct Archetype {
     id: Uuid,
 }
 
-impl Archetype {
-    pub fn new(id: Uuid) -> Self {
-        Self { id }
-    }
+#[async_trait::async_trait]
+impl QueryWrapper for Archetype {
+    type Model = data::Archetype;
 
-    async fn load(&self, context: &Context) -> anyhow::Result<data::Archetype> {
+    async fn load(&self, context: &Context) -> anyhow::Result<Self::Model> {
         context
             .archetypes()
             .load(self.id)
             .await
             .ok_or_else(|| anyhow!("Archetype {} does not exist", self.id))
+    }
+}
+
+impl Archetype {
+    pub fn new(id: Uuid) -> Self {
+        Self { id }
     }
 }
 

@@ -1,4 +1,4 @@
-use super::{Account, Context, Universe};
+use super::{Account, Context, QueryWrapper, Universe};
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use data::ContributorRole;
@@ -10,15 +10,11 @@ pub struct Contributor {
     account_id: Uuid,
 }
 
-impl Contributor {
-    pub fn new(universe_id: Uuid, account_id: Uuid) -> Self {
-        Self {
-            universe_id,
-            account_id,
-        }
-    }
+#[async_trait::async_trait]
+impl QueryWrapper for Contributor {
+    type Model = data::Contributor;
 
-    async fn load(&self, context: &Context) -> anyhow::Result<data::Contributor> {
+    async fn load(&self, context: &Context) -> anyhow::Result<Self::Model> {
         context
             .contributors()
             .load((self.universe_id, self.account_id))
@@ -30,6 +26,15 @@ impl Contributor {
                     self.universe_id
                 )
             })
+    }
+}
+
+impl Contributor {
+    pub fn new(universe_id: Uuid, account_id: Uuid) -> Self {
+        Self {
+            universe_id,
+            account_id,
+        }
     }
 }
 

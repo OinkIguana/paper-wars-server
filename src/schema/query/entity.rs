@@ -1,4 +1,4 @@
-use super::{ArchetypeVersion, Context, Player};
+use super::{ArchetypeVersion, Context, Player, QueryWrapper};
 use anyhow::anyhow;
 use juniper::FieldResult;
 use uuid::Uuid;
@@ -7,17 +7,22 @@ pub struct Entity {
     id: Uuid,
 }
 
-impl Entity {
-    pub fn new(id: Uuid) -> Self {
-        Self { id }
-    }
+#[async_trait::async_trait]
+impl QueryWrapper for Entity {
+    type Model = data::Entity;
 
-    async fn load(&self, context: &Context) -> anyhow::Result<data::Entity> {
+    async fn load(&self, context: &Context) -> anyhow::Result<Self::Model> {
         context
             .entities()
             .load(self.id)
             .await
             .ok_or_else(|| anyhow!("Entity {} does not exist", self.id))
+    }
+}
+
+impl Entity {
+    pub fn new(id: Uuid) -> Self {
+        Self { id }
     }
 
     async fn load_game(

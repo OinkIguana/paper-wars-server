@@ -25,7 +25,10 @@ async fn get_graphql_handler<'a>(
     request: juniper_rocket_async::GraphQLRequest,
 ) -> juniper_rocket_async::GraphQLResponse {
     request
-        .execute(&schema, &Context::new(database.clone(), account_id.map(Into::into)))
+        .execute(
+            &schema,
+            &Context::new(database.clone(), account_id.map(Into::into)),
+        )
         .await
 }
 
@@ -37,7 +40,10 @@ async fn post_graphql_handler<'a>(
     request: juniper_rocket_async::GraphQLRequest,
 ) -> juniper_rocket_async::GraphQLResponse {
     request
-        .execute(&schema, &Context::new(database.clone(), account_id.map(Into::into)))
+        .execute(
+            &schema,
+            &Context::new(database.clone(), account_id.map(Into::into)),
+        )
         .await
 }
 

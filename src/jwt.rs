@@ -1,8 +1,8 @@
 use anyhow::anyhow;
 use chrono::Utc;
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation};
-use rocket::request::{Request, FromRequest, Outcome};
 use rocket::http::Status;
+use rocket::request::{FromRequest, Outcome, Request};
 use std::env;
 use uuid::Uuid;
 
@@ -59,13 +59,15 @@ impl<'a, 'r> FromRequest<'a, 'r> for AuthenticatedAccount {
     type Error = anyhow::Error;
 
     async fn from_request(request: &'a Request<'r>) -> Outcome<Self, Self::Error> {
-        let header = request
-            .headers()
-            .get("Authorization")
-            .next();
+        let header = request.headers().get("Authorization").next();
         let token = match header {
             Some(header) if header.starts_with("Bearer") => header[6..].trim(),
-            Some(..) => return Outcome::Failure((Status::Unauthorized, anyhow!("Only Bearer authorization is supported"))),
+            Some(..) => {
+                return Outcome::Failure((
+                    Status::Unauthorized,
+                    anyhow!("Only Bearer authorization is supported"),
+                ))
+            }
             None => return Outcome::Forward(()),
         };
         match decode(token) {

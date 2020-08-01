@@ -12,7 +12,7 @@ pub struct Account {
 impl QueryWrapper for Account {
     type Model = data::Account;
 
-    async fn load(&self, context: &Context) -> anyhow::Result<data::Account> {
+    async fn load(&self, context: &Context) -> anyhow::Result<Self::Model> {
         context
             .accounts()
             .load(self.id)

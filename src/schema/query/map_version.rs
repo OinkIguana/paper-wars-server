@@ -1,4 +1,4 @@
-use super::Context;
+use super::{Context, QueryWrapper};
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use juniper::FieldResult;
@@ -7,6 +7,25 @@ use uuid::Uuid;
 pub struct MapVersion {
     map_id: Uuid,
     version: i32,
+}
+
+#[async_trait::async_trait]
+impl QueryWrapper for MapVersion {
+    type Model = data::MapVersion;
+
+    async fn load(&self, context: &Context) -> anyhow::Result<Self::Model> {
+        context
+            .map_versions()
+            .load((self.map_id, self.version))
+            .await
+            .ok_or_else(|| {
+                anyhow!(
+                    "Map {} version {} does not exist",
+                    self.map_id,
+                    self.version
+                )
+            })
+    }
 }
 
 impl MapVersion {
@@ -20,20 +39,6 @@ impl MapVersion {
             .load(self.map_id)
             .await
             .ok_or_else(|| anyhow!("Map {} does not exist", self.map_id))
-    }
-
-    async fn load(&self, context: &Context) -> anyhow::Result<data::MapVersion> {
-        context
-            .map_versions()
-            .load((self.map_id, self.version))
-            .await
-            .ok_or_else(|| {
-                anyhow!(
-                    "Map {} version {} does not exist",
-                    self.map_id,
-                    self.version
-                )
-            })
     }
 }
 
