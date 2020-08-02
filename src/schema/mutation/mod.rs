@@ -3,6 +3,7 @@ use juniper::FieldResult;
 
 mod account;
 mod auth;
+mod contributor;
 mod universe;
 
 pub struct Mutation;
@@ -47,11 +48,23 @@ impl Mutation {
         self.create_universe(context, universe)
     }
 
+    // -- Contributors --
+
+    /// Invite a person to be a contributor to a universe you own.
     fn invite_contributor(
         &self,
         context: &Context,
-        contributor: universe::InviteContributor,
+        contributor: contributor::InviteContributor,
     ) -> FieldResult<Contributor> {
         self.invite_contributor(context, contributor)
+    }
+
+    /// Accept or reject an invitation to contribute to a universe.
+    fn respond_to_contributor_invitation(
+        &self,
+        context: &Context,
+        invitation: contributor::RespondToContributorInvitation,
+    ) -> FieldResult<Contributor> {
+        self.respond_to_contributor_invitation(context, invitation)
     }
 }
