@@ -1,6 +1,8 @@
 use super::{query::*, Context};
 use juniper::FieldResult;
 
+mod helpers;
+
 mod account;
 mod auth;
 mod contributor;
@@ -46,6 +48,14 @@ impl Mutation {
         universe: universe::CreateUniverse,
     ) -> FieldResult<UniverseVersion> {
         self.create_universe(context, universe)
+    }
+
+    fn release_universe_version(
+        &self,
+        context: &Context,
+        universe: universe::ReleaseUniverseVersion,
+    ) -> FieldResult<UniverseVersion> {
+        self.release_universe_version(context, universe)
     }
 
     // -- Contributors --

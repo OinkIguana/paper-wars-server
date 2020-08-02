@@ -5,10 +5,17 @@ use diesel::dsl::*;
 use diesel::prelude::*;
 use diesel_citext::prelude::*;
 use juniper::FieldResult;
+use uuid::Uuid;
 
 #[derive(juniper::GraphQLInputObject)]
 pub struct CreateUniverse {
     name: String,
+}
+
+#[derive(juniper::GraphQLInputObject)]
+pub struct ReleaseUniverseVersion {
+    universe_id: Uuid,
+    version: i32,
 }
 
 impl Mutation {
@@ -55,6 +62,40 @@ impl Mutation {
         let query = UniverseVersion::new(universe_version.universe_id, universe_version.version);
         context.universes().prime(universe);
         context.contributors().prime(contributor);
+        context.universe_versions().prime(universe_version);
+        Ok(query)
+    }
+
+    pub(super) fn release_universe_version(
+        &self,
+        context: &Context,
+        universe: ReleaseUniverseVersion,
+    ) -> FieldResult<UniverseVersion> {
+        let account_id = context.try_authenticated_account()?;
+        let universe_version = context.transaction(|conn| {
+            self.assert_universe_owner(context, universe.universe_id, account_id)?;
+            let mut universe_version = context
+                .universe_versions()
+                .load((universe.universe_id, universe.version))
+                .ok_or_else(|| anyhow!(
+                    "Universe {} version {} does not exist, and cannot be released",
+                    universe.universe_id,
+                    universe.version,
+                ))?;
+            if universe_version.released_at.is_some() {
+                return Err(anyhow!(
+                    "Universe {} version {} has already been released",
+                    universe.universe_id,
+                    universe.version,
+                ));
+            }
+            universe_version.released_at = update(&universe_version)
+                .set(universe_versions::released_at.eq(now))
+                .returning(universe_versions::released_at)
+                .get_result(conn)?;
+            Ok(universe_version)
+        })?;
+        let query = UniverseVersion::new(universe_version.universe_id, universe_version.version);
         context.universe_versions().prime(universe_version);
         Ok(query)
     }

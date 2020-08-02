@@ -26,18 +26,7 @@ impl Mutation {
     ) -> FieldResult<Contributor> {
         let account_id = context.try_authenticated_account()?;
         let invitation = context.transaction(|conn| {
-            let is_universe_owner = context
-                .contributors()
-                .load((contributor.universe_id, account_id))
-                .map(|relationship| relationship.role == ContributorRole::Owner)
-                .unwrap_or(false);
-            if !is_universe_owner {
-                return Err(anyhow!(
-                    "You ({}) are not the owner of this universe ({})",
-                    account_id,
-                    contributor.universe_id,
-                ));
-            }
+            self.assert_universe_owner(context, contributor.universe_id, account_id)?;
             let existing_contributor = contributors::table
                 .filter(contributors::account_id.eq(contributor.account_id))
                 .filter(contributors::universe_id.eq(contributor.universe_id))
