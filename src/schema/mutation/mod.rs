@@ -46,4 +46,12 @@ impl Mutation {
     ) -> FieldResult<UniverseVersion> {
         self.create_universe(context, universe)
     }
+
+    fn invite_contributor(
+        &self,
+        context: &Context,
+        contributor: universe::InviteContributor,
+    ) -> FieldResult<Contributor> {
+        self.invite_contributor(context, contributor)
+    }
 }
