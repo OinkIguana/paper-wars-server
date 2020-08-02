@@ -9,15 +9,13 @@ pub struct UniverseVersion {
     version: i32,
 }
 
-#[async_trait::async_trait]
 impl QueryWrapper for UniverseVersion {
     type Model = data::UniverseVersion;
 
-    async fn load(&self, context: &Context) -> anyhow::Result<Self::Model> {
+    fn load(&self, context: &Context) -> anyhow::Result<Self::Model> {
         context
             .universe_versions()
             .load((self.universe_id, self.version))
-            .await
             .ok_or_else(|| {
                 anyhow!(
                     "Universe {} version {} does not exist",
@@ -36,11 +34,10 @@ impl UniverseVersion {
         }
     }
 
-    async fn load_universe(&self, context: &Context) -> anyhow::Result<data::Universe> {
+    fn load_universe(&self, context: &Context) -> anyhow::Result<data::Universe> {
         context
             .universes()
             .load(self.universe_id)
-            .await
             .ok_or_else(|| anyhow!("Universe {} does not exist", self.universe_id))
     }
 }
@@ -48,49 +45,47 @@ impl UniverseVersion {
 #[juniper::graphql_object(Context = Context)]
 impl UniverseVersion {
     /// The ID of the universe.
-    async fn id(&self, context: &Context) -> FieldResult<Uuid> {
-        Ok(self.load_universe(context).await?.id)
+    fn id(&self, context: &Context) -> FieldResult<Uuid> {
+        Ok(self.load_universe(context)?.id)
     }
 
     /// The name of the universe. This should be compared case-insensitively.
-    async fn name(&self, context: &Context) -> FieldResult<String> {
-        Ok(self.load_universe(context).await?.name.to_string())
+    fn name(&self, context: &Context) -> FieldResult<String> {
+        Ok(self.load_universe(context)?.name.to_string())
     }
 
     /// The version number.
-    async fn version(&self, context: &Context) -> FieldResult<i32> {
-        Ok(self.load(context).await?.version)
+    fn version(&self, context: &Context) -> FieldResult<i32> {
+        Ok(self.load(context)?.version)
     }
 
     /// When this version was created.
-    async fn created_at(&self, context: &Context) -> FieldResult<DateTime<Utc>> {
-        Ok(self.load(context).await?.created_at)
+    fn created_at(&self, context: &Context) -> FieldResult<DateTime<Utc>> {
+        Ok(self.load(context)?.created_at)
     }
 
     /// When this version was released. If null, this version is unreleased.
-    async fn released_at(&self, context: &Context) -> FieldResult<Option<DateTime<Utc>>> {
-        Ok(self.load(context).await?.released_at)
+    fn released_at(&self, context: &Context) -> FieldResult<Option<DateTime<Utc>>> {
+        Ok(self.load(context)?.released_at)
     }
 
     /// Archetypes available in this version.
-    async fn archetypes(&self, context: &Context) -> FieldResult<Vec<ArchetypeVersion>> {
-        let universe = self.load(context).await?;
+    fn archetypes(&self, context: &Context) -> FieldResult<Vec<ArchetypeVersion>> {
+        let universe = self.load(context)?;
         Ok(context
             .universe_version_archetypes()
             .for_universe_version(&universe.universe_id, &universe.version)
-            .await
             .into_iter()
             .map(|version| ArchetypeVersion::new(version.archetype_id, version.archetype_version))
             .collect())
     }
 
     /// Maps available in this version.
-    async fn maps(&self, context: &Context) -> FieldResult<Vec<MapVersion>> {
-        let universe = self.load(context).await?;
+    fn maps(&self, context: &Context) -> FieldResult<Vec<MapVersion>> {
+        let universe = self.load(context)?;
         Ok(context
             .universe_version_maps()
             .for_universe_version(&universe.universe_id, &universe.version)
-            .await
             .into_iter()
             .map(|version| MapVersion::new(version.map_id, version.map_version))
             .collect())

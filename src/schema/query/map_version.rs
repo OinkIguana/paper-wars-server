@@ -9,15 +9,13 @@ pub struct MapVersion {
     version: i32,
 }
 
-#[async_trait::async_trait]
 impl QueryWrapper for MapVersion {
     type Model = data::MapVersion;
 
-    async fn load(&self, context: &Context) -> anyhow::Result<Self::Model> {
+    fn load(&self, context: &Context) -> anyhow::Result<Self::Model> {
         context
             .map_versions()
             .load((self.map_id, self.version))
-            .await
             .ok_or_else(|| {
                 anyhow!(
                     "Map {} version {} does not exist",
@@ -33,11 +31,10 @@ impl MapVersion {
         Self { map_id, version }
     }
 
-    async fn load_map(&self, context: &Context) -> anyhow::Result<data::Map> {
+    fn load_map(&self, context: &Context) -> anyhow::Result<data::Map> {
         context
             .maps()
             .load(self.map_id)
-            .await
             .ok_or_else(|| anyhow!("Map {} does not exist", self.map_id))
     }
 }
@@ -45,27 +42,27 @@ impl MapVersion {
 #[juniper::graphql_object(Context = Context)]
 impl MapVersion {
     /// The ID of the map.
-    async fn id(&self, context: &Context) -> FieldResult<Uuid> {
-        Ok(self.load_map(context).await?.id)
+    fn id(&self, context: &Context) -> FieldResult<Uuid> {
+        Ok(self.load_map(context)?.id)
     }
 
     /// The development name of the map. This should not be used in game.
-    async fn name(&self, context: &Context) -> FieldResult<String> {
-        Ok(self.load_map(context).await?.name.to_owned())
+    fn name(&self, context: &Context) -> FieldResult<String> {
+        Ok(self.load_map(context)?.name.to_owned())
     }
 
     /// The version number.
-    async fn version(&self, context: &Context) -> FieldResult<i32> {
-        Ok(self.load(context).await?.version)
+    fn version(&self, context: &Context) -> FieldResult<i32> {
+        Ok(self.load(context)?.version)
     }
 
     /// The script defining the behaviour and attributes of this archetype.
-    async fn script(&self, context: &Context) -> FieldResult<String> {
-        Ok(self.load(context).await?.script.to_owned())
+    fn script(&self, context: &Context) -> FieldResult<String> {
+        Ok(self.load(context)?.script.to_owned())
     }
 
     /// When this version was created.
-    async fn created_at(&self, context: &Context) -> FieldResult<DateTime<Utc>> {
-        Ok(self.load(context).await?.created_at)
+    fn created_at(&self, context: &Context) -> FieldResult<DateTime<Utc>> {
+        Ok(self.load(context)?.created_at)
     }
 }

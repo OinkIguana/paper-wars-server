@@ -8,15 +8,13 @@ pub struct Player {
     account_id: Uuid,
 }
 
-#[async_trait::async_trait]
 impl QueryWrapper for Player {
     type Model = data::Player;
 
-    async fn load(&self, context: &Context) -> anyhow::Result<Self::Model> {
+    fn load(&self, context: &Context) -> anyhow::Result<Self::Model> {
         context
             .players()
             .load((self.game_id, self.account_id))
-            .await
             .ok_or_else(|| {
                 anyhow!(
                     "Game {} player {} does not exist",
@@ -35,11 +33,10 @@ impl Player {
         }
     }
 
-    async fn load_account(&self, context: &Context) -> anyhow::Result<data::Account> {
+    fn load_account(&self, context: &Context) -> anyhow::Result<data::Account> {
         context
             .accounts()
             .load(self.account_id)
-            .await
             .ok_or_else(|| anyhow!("Account {} does not exist", self.account_id))
     }
 }
@@ -47,22 +44,22 @@ impl Player {
 #[juniper::graphql_object(Context = Context)]
 impl Player {
     /// The ID of the player's account.
-    async fn id(&self, context: &Context) -> FieldResult<Uuid> {
-        Ok(self.load(context).await?.account_id)
+    fn id(&self, context: &Context) -> FieldResult<Uuid> {
+        Ok(self.load(context)?.account_id)
     }
 
     /// The name of the player.
-    async fn name(&self, context: &Context) -> FieldResult<String> {
-        Ok(self.load_account(context).await?.name.to_string())
+    fn name(&self, context: &Context) -> FieldResult<String> {
+        Ok(self.load_account(context)?.name.to_string())
     }
 
     /// The place this player's turn occurs in the order of the game.
-    async fn turn_order(&self, context: &Context) -> FieldResult<i32> {
-        Ok(self.load(context).await?.turn_order)
+    fn turn_order(&self, context: &Context) -> FieldResult<i32> {
+        Ok(self.load(context)?.turn_order)
     }
 
     /// The game state that is specific to this player.
-    async fn state(&self, context: &Context) -> FieldResult<String> {
-        Ok(self.load(context).await?.state.to_string())
+    fn state(&self, context: &Context) -> FieldResult<String> {
+        Ok(self.load(context)?.state.to_string())
     }
 }

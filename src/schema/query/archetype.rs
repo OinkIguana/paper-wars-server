@@ -8,15 +8,13 @@ pub struct Archetype {
     id: Uuid,
 }
 
-#[async_trait::async_trait]
 impl QueryWrapper for Archetype {
     type Model = data::Archetype;
 
-    async fn load(&self, context: &Context) -> anyhow::Result<Self::Model> {
+    fn load(&self, context: &Context) -> anyhow::Result<Self::Model> {
         context
             .archetypes()
             .load(self.id)
-            .await
             .ok_or_else(|| anyhow!("Archetype {} does not exist", self.id))
     }
 }
@@ -30,27 +28,27 @@ impl Archetype {
 #[juniper::graphql_object(Context = Context)]
 impl Archetype {
     /// The ID of the archetype.
-    async fn id(&self, context: &Context) -> FieldResult<Uuid> {
-        Ok(self.load(context).await?.id)
+    fn id(&self, context: &Context) -> FieldResult<Uuid> {
+        Ok(self.load(context)?.id)
     }
 
     /// The development name of the archetype. This should not be used in game.
-    async fn name(&self, context: &Context) -> FieldResult<String> {
-        Ok(self.load(context).await?.name.to_owned())
+    fn name(&self, context: &Context) -> FieldResult<String> {
+        Ok(self.load(context)?.name.to_owned())
     }
 
     /// When this archetype was created.
-    async fn created_at(&self, context: &Context) -> FieldResult<DateTime<Utc>> {
-        Ok(self.load(context).await?.created_at)
+    fn created_at(&self, context: &Context) -> FieldResult<DateTime<Utc>> {
+        Ok(self.load(context)?.created_at)
     }
 
-    async fn versions(&self, context: &Context) -> FieldResult<Vec<ArchetypeVersion>> {
+    fn versions(&self, context: &Context) -> FieldResult<Vec<ArchetypeVersion>> {
         Ok(context
             .archetype_versions()
-            .for_archetype(&self.load(context).await?.id)
-            .await
+            .for_archetype(&self.load(context)?.id)
             .into_iter()
             .map(|version| ArchetypeVersion::new(version.archetype_id, version.version))
             .collect())
     }
 }
+

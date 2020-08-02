@@ -1,6 +1,6 @@
 use super::Database;
 use data::{Searchable, TryAsQuery};
-use dataloader::BatchFn;
+use dataloader::sync::BatchFn;
 use diesel::prelude::*;
 use std::fmt::Debug;
 use std::hash::Hash;
@@ -30,7 +30,7 @@ where
     T: Clone + Debug,
     Database: BatchFn<K, Option<T>>,
 {
-    loader: dataloader::cached::Loader<K, Option<T>, Database>,
+    loader: dataloader::sync::cached::Loader<K, Option<T>, Database>,
     database: Database,
 }
 
@@ -42,37 +42,35 @@ where
 {
     pub fn new(database: Database) -> Self {
         Self {
-            loader: dataloader::cached::Loader::new(database.clone()),
+            loader: dataloader::sync::cached::Loader::new(database.clone()),
             database,
         }
     }
 
-    pub async fn load(&self, key: K) -> Option<T> {
-        self.loader.load(key).await
+    pub fn load(&self, key: K) -> Option<T> {
+        self.loader.load(key)
     }
 
     #[allow(dead_code)]
-    pub async fn load_many(&self, keys: Vec<K>) -> std::collections::HashMap<K, Option<T>> {
-        self.loader.load_many(keys).await
+    pub fn load_many(&self, keys: Vec<K>) -> std::collections::HashMap<K, Option<T>> {
+        self.loader.load_many(keys)
     }
 
-    pub async fn prime(&self, item: T)
+    pub fn prime(&self, item: T)
     where
         T: traits::BatchFnItem<Key = K>,
     {
         self.loader
             .prime(traits::BatchFnItem::key(&item), Some(item))
-            .await
     }
 
-    async fn prime_many(&self, items: impl IntoIterator<Item = T>)
+    fn prime_many(&self, items: impl IntoIterator<Item = T>)
     where
         T: traits::BatchFnItem<Key = K>,
     {
         for item in items {
             self.loader
-                .prime(traits::BatchFnItem::key(&item), Some(item))
-                .await;
+                .prime(traits::BatchFnItem::key(&item), Some(item));
         }
     }
 }
@@ -83,13 +81,11 @@ where
     T: Clone + Debug + Searchable + traits::BatchFnItem<Key = K>,
     Database: BatchFn<K, Option<T>>,
 {
-    pub async fn search(&self, search: &T::Search) -> anyhow::Result<Vec<T>> {
-        let items = tokio::task::block_in_place(|| {
-            let conn = self.database.connection()?;
-            let query = search.try_as_query()?;
-            anyhow::Result::<Vec<T>>::Ok(query.load(&conn)?)
-        })?;
-        self.prime_many(items.clone()).await;
+    pub fn search(&self, search: &T::Search) -> anyhow::Result<Vec<T>> {
+        let conn = self.database.connection()?;
+        let query = search.try_as_query()?;
+        let items = query.load(&conn)?;
+        self.prime_many(items.clone());
         Ok(items)
     }
 }

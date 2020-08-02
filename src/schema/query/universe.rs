@@ -8,15 +8,13 @@ pub struct Universe {
     id: Uuid,
 }
 
-#[async_trait::async_trait]
 impl QueryWrapper for Universe {
     type Model = data::Universe;
 
-    async fn load(&self, context: &Context) -> anyhow::Result<Self::Model> {
+    fn load(&self, context: &Context) -> anyhow::Result<Self::Model> {
         context
             .universes()
             .load(self.id)
-            .await
             .ok_or_else(|| anyhow!("Universe {} does not exist", self.id))
     }
 }
@@ -30,59 +28,55 @@ impl Universe {
 #[juniper::graphql_object(Context = Context)]
 impl Universe {
     /// The ID of the universe.
-    async fn id(&self, context: &Context) -> FieldResult<Uuid> {
-        Ok(self.load(context).await?.id)
+    fn id(&self, context: &Context) -> FieldResult<Uuid> {
+        Ok(self.load(context)?.id)
     }
 
     /// The name of the universe. This should be compared case-insensitively.
-    async fn name(&self, context: &Context) -> FieldResult<String> {
-        Ok(self.load(context).await?.name.to_string())
+    fn name(&self, context: &Context) -> FieldResult<String> {
+        Ok(self.load(context)?.name.to_string())
     }
 
     /// When this universe was created.
-    async fn created_at(&self, context: &Context) -> FieldResult<DateTime<Utc>> {
-        Ok(self.load(context).await?.created_at)
+    fn created_at(&self, context: &Context) -> FieldResult<DateTime<Utc>> {
+        Ok(self.load(context)?.created_at)
     }
 
     /// The accounts who contribute to the development of this universe.
-    async fn contributors(&self, context: &Context) -> FieldResult<Vec<Contributor>> {
+    fn contributors(&self, context: &Context) -> FieldResult<Vec<Contributor>> {
         Ok(context
             .contributors()
             .for_universe(&self.id)
-            .await
             .into_iter()
             .map(|contributor| Contributor::new(contributor.universe_id, contributor.account_id))
             .collect())
     }
 
     /// Archetypes which belong to this universe.
-    async fn archetypes(&self, context: &Context) -> FieldResult<Vec<Archetype>> {
+    fn archetypes(&self, context: &Context) -> FieldResult<Vec<Archetype>> {
         Ok(context
             .archetypes()
             .for_universe(&self.id)
-            .await
             .into_iter()
             .map(|archetype| Archetype::new(archetype.id))
             .collect())
     }
 
     /// Maps which belong to this universe.
-    async fn maps(&self, context: &Context) -> FieldResult<Vec<Map>> {
+    fn maps(&self, context: &Context) -> FieldResult<Vec<Map>> {
         Ok(context
             .maps()
-            .for_universe(&self.load(context).await?.id)
-            .await
+            .for_universe(&self.load(context)?.id)
             .into_iter()
             .map(|map| Map::new(map.id))
             .collect())
     }
 
     /// Versions of this universe.
-    async fn versions(&self, context: &Context) -> FieldResult<Vec<UniverseVersion>> {
+    fn versions(&self, context: &Context) -> FieldResult<Vec<UniverseVersion>> {
         Ok(context
             .universe_versions()
-            .for_universe(&self.load(context).await?.id)
-            .await
+            .for_universe(&self.load(context)?.id)
             .into_iter()
             .map(|version| UniverseVersion::new(version.universe_id, version.version))
             .collect())
@@ -90,34 +84,33 @@ impl Universe {
 
     /// The highest version number for this universe.
     #[graphql(arguments(unreleased(default = false)))]
-    async fn version_number(
+    fn version_number(
         &self,
         context: &Context,
         unreleased: bool,
     ) -> FieldResult<Option<i32>> {
         Ok(context
             .universe_versions()
-            .load_current(self.load(context).await?.id, unreleased)
-            .await?
+            .load_current(self.load(context)?.id, unreleased)?
             .map(|version| version.version))
     }
 }
 
 #[juniper::graphql_object(Context = Context, name = "UniversePagination")]
 impl Pagination<Universe> {
-    async fn items(&self) -> &[Universe] {
-        self.items().await
+    fn items(&self) -> &[Universe] {
+        self.items()
     }
 
-    async fn total(&self) -> i32 {
-        self.total().await
+    fn total(&self) -> i32 {
+        self.total()
     }
 
-    async fn start(&self, context: &Context) -> juniper::FieldResult<Option<String>> {
-        self.start(context).await
+    fn start(&self, context: &Context) -> juniper::FieldResult<Option<String>> {
+        self.start(context)
     }
 
-    async fn end(&self, context: &Context) -> juniper::FieldResult<Option<String>> {
-        self.end(context).await
+    fn end(&self, context: &Context) -> juniper::FieldResult<Option<String>> {
+        self.end(context)
     }
 }

@@ -25,30 +25,29 @@ where
         }
     }
 
-    pub async fn items(&self) -> &[T] {
+    pub fn items(&self) -> &[T] {
         self.items.as_slice()
     }
 
-    pub async fn total(&self) -> i32 {
+    pub fn total(&self) -> i32 {
         0
     }
 
-    pub async fn start(&self, context: &Context) -> juniper::FieldResult<Option<String>> {
+    pub fn start(&self, context: &Context) -> juniper::FieldResult<Option<String>> {
         let item = match self.items.first() {
             Some(item) => item,
             None => return Ok(None),
         };
-        Ok(Some(item.load(context).await?.cursor(&self.search, 0usize)))
+        Ok(Some(item.load(context)?.cursor(&self.search, 0usize)))
     }
 
-    pub async fn end(&self, context: &Context) -> juniper::FieldResult<Option<String>> {
+    pub fn end(&self, context: &Context) -> juniper::FieldResult<Option<String>> {
         let item = match self.items.last() {
             Some(item) => item,
             None => return Ok(None),
         };
         Ok(Some(
-            item.load(context)
-                .await?
+            item.load(context)?
                 .cursor(&self.search, self.items.len()),
         ))
     }

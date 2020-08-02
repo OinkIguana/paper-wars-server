@@ -1,4 +1,5 @@
 use super::{Database, Loader};
+use anyhow::anyhow;
 use data::*;
 use diesel_citext::types::CiString;
 use uuid::Uuid;
@@ -53,6 +54,11 @@ impl Context {
         F: FnOnce(&DbConnection) -> anyhow::Result<T>,
     {
         self.database.transaction(transaction)
+    }
+
+    pub fn try_authenticated_account(&self) -> anyhow::Result<Uuid> {
+        self.authenticated_account
+            .ok_or(anyhow!("You must be signed in to do this."))
     }
 
     pub fn authenticated_account(&self) -> Option<Uuid> {

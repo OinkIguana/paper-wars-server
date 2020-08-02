@@ -9,15 +9,13 @@ pub struct ArchetypeVersion {
     version: i32,
 }
 
-#[async_trait::async_trait]
 impl QueryWrapper for ArchetypeVersion {
     type Model = data::ArchetypeVersion;
 
-    async fn load(&self, context: &Context) -> anyhow::Result<Self::Model> {
+    fn load(&self, context: &Context) -> anyhow::Result<Self::Model> {
         context
             .archetype_versions()
             .load((self.archetype_id, self.version))
-            .await
             .ok_or_else(|| {
                 anyhow!(
                     "Archetype {} version {} does not exist",
@@ -36,11 +34,10 @@ impl ArchetypeVersion {
         }
     }
 
-    async fn load_archetype(&self, context: &Context) -> anyhow::Result<data::Archetype> {
+    fn load_archetype(&self, context: &Context) -> anyhow::Result<data::Archetype> {
         context
             .archetypes()
             .load(self.archetype_id)
-            .await
             .ok_or_else(|| anyhow!("Archetype {} does not exist", self.archetype_id))
     }
 }
@@ -48,27 +45,27 @@ impl ArchetypeVersion {
 #[juniper::graphql_object(Context = Context)]
 impl ArchetypeVersion {
     /// The ID of the archetype.
-    async fn id(&self, context: &Context) -> FieldResult<Uuid> {
-        Ok(self.load_archetype(context).await?.id)
+    fn id(&self, context: &Context) -> FieldResult<Uuid> {
+        Ok(self.load_archetype(context)?.id)
     }
 
     /// The development name of the archetype. This should not be used in game.
-    async fn name(&self, context: &Context) -> FieldResult<String> {
-        Ok(self.load_archetype(context).await?.name.to_owned())
+    fn name(&self, context: &Context) -> FieldResult<String> {
+        Ok(self.load_archetype(context)?.name.to_owned())
     }
 
     /// The version number.
-    async fn version(&self, context: &Context) -> FieldResult<i32> {
-        Ok(self.load(context).await?.version)
+    fn version(&self, context: &Context) -> FieldResult<i32> {
+        Ok(self.load(context)?.version)
     }
 
     /// The script defining the behaviour and attributes of this archetype.
-    async fn script(&self, context: &Context) -> FieldResult<String> {
-        Ok(self.load(context).await?.script.to_owned())
+    fn script(&self, context: &Context) -> FieldResult<String> {
+        Ok(self.load(context)?.script.to_owned())
     }
 
     /// When this version was created.
-    async fn created_at(&self, context: &Context) -> FieldResult<DateTime<Utc>> {
-        Ok(self.load(context).await?.created_at)
+    fn created_at(&self, context: &Context) -> FieldResult<DateTime<Utc>> {
+        Ok(self.load(context)?.created_at)
     }
 }

@@ -9,7 +9,7 @@ batch_fn!(universe_versions => UniverseVersion { universe_id: Uuid, version: i32
 impl Loader<(Uuid, i32), UniverseVersion> {
     join!(universe_versions => for_universe(universe_id: Uuid) -> UniverseVersion);
 
-    pub async fn load_current(
+    pub fn load_current(
         &self,
         universe_id: Uuid,
         unreleased: bool,
@@ -36,7 +36,7 @@ impl Loader<(Uuid, i32), UniverseVersion> {
             })?;
 
         if let Some(version) = &version {
-            self.prime(version.clone()).await;
+            self.prime(version.clone());
         }
         Ok(version)
     }
