@@ -74,8 +74,9 @@ impl Query {
     /// Search for universes.
     fn universes(
         context: &Context,
-        search: data::UniverseSearch,
+        search: Option<data::UniverseSearch>,
     ) -> FieldResult<Pagination<Universe>> {
+        let search = search.unwrap_or_default();
         let items = context
             .universes()
             .search(&search)?
@@ -87,8 +88,9 @@ impl Query {
     /// Search for users.
     fn accounts(
         context: &Context,
-        search: data::AccountSearch,
+        search: Option<data::AccountSearch>,
     ) -> FieldResult<Pagination<Account>> {
+        let search = search.unwrap_or_default();
         let items = context
             .accounts()
             .search(&search)?

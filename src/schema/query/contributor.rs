@@ -1,4 +1,4 @@
-use super::{Account, Context, QueryWrapper, Universe};
+use super::{Account, Context, QueryWrapper, Universe, Pagination};
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use data::ContributorRole;
@@ -56,5 +56,24 @@ impl Contributor {
     /// When they started contributing to this universe.
     async fn contributor_since(&self, context: &Context) -> FieldResult<DateTime<Utc>> {
         Ok(self.load(context)?.created_at)
+    }
+}
+
+#[juniper::graphql_object(Context = Context, name = "ContributorPagination")]
+impl Pagination<Contributor> {
+    fn items(&self) -> &[Contributor] {
+        self.items()
+    }
+
+    fn total(&self) -> i32 {
+        self.total()
+    }
+
+    fn start(&self, context: &Context) -> juniper::FieldResult<Option<String>> {
+        self.start(context)
+    }
+
+    fn end(&self, context: &Context) -> juniper::FieldResult<Option<String>> {
+        self.end(context)
     }
 }

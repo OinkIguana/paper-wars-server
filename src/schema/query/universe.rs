@@ -43,13 +43,18 @@ impl Universe {
     }
 
     /// The accounts who contribute to the development of this universe.
-    fn contributors(&self, context: &Context) -> FieldResult<Vec<Contributor>> {
-        Ok(context
+    fn contributors(
+        &self,
+        context: &Context,
+        search: Option<data::ContributorSearch>,
+    ) -> FieldResult<Pagination<Contributor>> {
+        let search = search.unwrap_or_default().for_universe(self.id);
+        let items = context
             .contributors()
-            .for_universe(&self.id)
+            .search(&search)?
             .into_iter()
-            .map(|contributor| Contributor::new(contributor.universe_id, contributor.account_id))
-            .collect())
+            .map(|contributor| Contributor::new(contributor.universe_id, contributor.account_id));
+        Ok(Pagination::new(search, items))
     }
 
     /// Archetypes which belong to this universe.
@@ -84,11 +89,7 @@ impl Universe {
 
     /// The highest version number for this universe.
     #[graphql(arguments(unreleased(default = false)))]
-    fn version_number(
-        &self,
-        context: &Context,
-        unreleased: bool,
-    ) -> FieldResult<Option<i32>> {
+    fn version_number(&self, context: &Context, unreleased: bool) -> FieldResult<Option<i32>> {
         Ok(context
             .universe_versions()
             .load_current(self.load(context)?.id, unreleased)?

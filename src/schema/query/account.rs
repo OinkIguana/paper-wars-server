@@ -54,13 +54,18 @@ impl Account {
     }
 
     /// The universes that this account is a contributor to.
-    fn contributions(&self, context: &Context) -> FieldResult<Vec<Contributor>> {
-        Ok(context
+    fn contributions(
+        &self,
+        context: &Context,
+        search: Option<data::ContributorSearch>,
+    ) -> FieldResult<Pagination<Contributor>> {
+        let search = search.unwrap_or_default().for_account(self.id);
+        let items = context
             .contributors()
-            .for_account(&self.load(context)?.id)
+            .search(&search)?
             .into_iter()
-            .map(|contributor| Contributor::new(contributor.universe_id, contributor.account_id))
-            .collect())
+            .map(|contributor| Contributor::new(contributor.universe_id, contributor.account_id));
+        Ok(Pagination::new(search, items))
     }
 
     /// Games that this person is playing.
