@@ -30,7 +30,7 @@ impl Mutation {
             if bcrypt::verify(credentials.password, &login.password)? {
                 context.accounts().load(login.account_id).unwrap()
             } else {
-                return Err(anyhow!("Incorrect password").into())
+                return Err(anyhow!("Incorrect password").into());
             }
         } else {
             let account_id = if let Some(token) = token {

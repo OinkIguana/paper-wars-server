@@ -1,4 +1,7 @@
-use super::{Archetype, Context, Contributor, Map, Pagination, QueryWrapper, UniverseVersion};
+use super::{
+    Archetype, Context, Contributor, Map, OperationResult, Pagination, QueryWrapper,
+    UniverseVersion,
+};
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use juniper::FieldResult;
@@ -113,5 +116,16 @@ impl Pagination<Universe> {
 
     fn end(&self, context: &Context) -> juniper::FieldResult<Option<String>> {
         self.end(context)
+    }
+}
+
+#[juniper::graphql_object(Context = Context, name = "UniverseResult")]
+impl OperationResult<Universe> {
+    pub fn success(&self) -> Option<&Universe> {
+        self.success()
+    }
+
+    pub fn error(&self) -> Option<String> {
+        self.error()
     }
 }

@@ -5,9 +5,11 @@ use uuid::Uuid;
 mod traits;
 pub use traits::QueryWrapper;
 
-#[macro_use]
 mod pagination;
 use pagination::Pagination;
+
+mod operation_result;
+pub use operation_result::OperationResult;
 
 mod account;
 mod archetype;
@@ -55,11 +57,7 @@ impl Query {
     }
 
     /// Look up a version of a universe. If version is not specified, looks up the current (released) version.
-    fn universe(
-        context: &Context,
-        id: Uuid,
-        version: Option<i32>,
-    ) -> FieldResult<UniverseVersion> {
+    fn universe(context: &Context, id: Uuid, version: Option<i32>) -> FieldResult<UniverseVersion> {
         let version = match version {
             Some(version) => version,
             None => context

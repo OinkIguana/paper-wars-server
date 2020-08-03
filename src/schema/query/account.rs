@@ -1,4 +1,4 @@
-use super::{Context, Contributor, Email, Game, Pagination, QueryWrapper};
+use super::{Context, Contributor, Email, Game, OperationResult, Pagination, QueryWrapper};
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use juniper::FieldResult;
@@ -95,5 +95,16 @@ impl Pagination<Account> {
 
     fn end(&self, context: &Context) -> juniper::FieldResult<Option<String>> {
         self.end(context)
+    }
+}
+
+#[juniper::graphql_object(Context = Context, name = "AccountResult")]
+impl OperationResult<Account> {
+    pub fn success(&self) -> Option<&Account> {
+        self.success()
+    }
+
+    pub fn error(&self) -> Option<String> {
+        self.error()
     }
 }

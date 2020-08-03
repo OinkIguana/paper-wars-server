@@ -1,9 +1,7 @@
 use super::{Context, Contributor, Mutation};
-use anyhow::anyhow;
 use data::{contributors, ContributorRole};
 use diesel::dsl::*;
 use diesel::prelude::*;
-use juniper::FieldResult;
 use uuid::Uuid;
 
 #[derive(juniper::GraphQLInputObject)]
@@ -23,7 +21,7 @@ impl Mutation {
         &self,
         context: &Context,
         contributor: InviteContributor,
-    ) -> FieldResult<Contributor> {
+    ) -> anyhow::Result<Contributor> {
         let account_id = context.try_authenticated_account()?;
         let invitation = context.transaction(|conn| {
             self.assert_universe_owner(context, contributor.universe_id, account_id)?;
@@ -31,14 +29,13 @@ impl Mutation {
                 .filter(contributors::account_id.eq(contributor.account_id))
                 .filter(contributors::universe_id.eq(contributor.universe_id))
                 .filter(contributors::role.ne(ContributorRole::Declined));
-            let contributor_exists = select(exists(existing_contributor)).get_result(conn)?;
-            if contributor_exists {
-                return Err(anyhow!(
-                    "That account ({}) is already a contributor to this universe ({})",
-                    contributor.account_id,
-                    contributor.universe_id,
-                ));
-            }
+            let contributor_exists: bool = select(exists(existing_contributor)).get_result(conn)?;
+            anyhow::ensure!(
+                !contributor_exists,
+                "That account ({}) is already a contributor to this universe ({})",
+                contributor.account_id,
+                contributor.universe_id,
+            );
 
             let invitation: data::Contributor = insert_into(contributors::table)
                 .values((
@@ -59,14 +56,14 @@ impl Mutation {
         &self,
         context: &Context,
         invitation: RespondToContributorInvitation,
-    ) -> FieldResult<Contributor> {
+    ) -> anyhow::Result<Contributor> {
         let account_id = context.try_authenticated_account()?;
         let contributor = context.transaction(|conn| {
             let mut contributor = context
                 .contributors()
                 .load((invitation.universe_id, account_id))
                 .ok_or_else(|| {
-                    anyhow!(
+                    anyhow::anyhow!(
                         "You ({}) havenot been invited to contribute to this universe ({}).",
                         account_id,
                         invitation.universe_id

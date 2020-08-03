@@ -31,8 +31,8 @@ impl Mutation {
         &self,
         context: &Context,
         account: account::CreateAccount,
-    ) -> FieldResult<Account> {
-        self.create_account(context, account)
+    ) -> OperationResult<Account> {
+        self.create_account(context, account).into()
     }
 
     // -- Universes --
@@ -42,8 +42,8 @@ impl Mutation {
         &self,
         context: &Context,
         universe: universe::CreateUniverse,
-    ) -> FieldResult<Universe> {
-        self.create_universe(context, universe)
+    ) -> OperationResult<Universe> {
+        self.create_universe(context, universe).into()
     }
 
     /// Create a new version of an existing universe. If a previously unreleased version already exists, this will fail.
@@ -51,8 +51,8 @@ impl Mutation {
         &self,
         context: &Context,
         universe: universe::CreateUniverseVersion,
-    ) -> FieldResult<UniverseVersion> {
-        self.create_universe_version(context, universe)
+    ) -> OperationResult<UniverseVersion> {
+        self.create_universe_version(context, universe).into()
     }
 
     /// Release the current unreleased version of a universe. If no unreleased version exists, this will fail.
@@ -60,8 +60,8 @@ impl Mutation {
         &self,
         context: &Context,
         universe: universe::ReleaseUniverseVersion,
-    ) -> FieldResult<UniverseVersion> {
-        self.release_universe_version(context, universe)
+    ) -> OperationResult<UniverseVersion> {
+        self.release_universe_version(context, universe).into()
     }
 
     // -- Contributors --
@@ -71,8 +71,8 @@ impl Mutation {
         &self,
         context: &Context,
         contributor: contributor::InviteContributor,
-    ) -> FieldResult<Contributor> {
-        self.invite_contributor(context, contributor)
+    ) -> OperationResult<Contributor> {
+        self.invite_contributor(context, contributor).into()
     }
 
     /// Accept or reject an invitation to contribute to a universe.
@@ -80,7 +80,8 @@ impl Mutation {
         &self,
         context: &Context,
         invitation: contributor::RespondToContributorInvitation,
-    ) -> FieldResult<Contributor> {
+    ) -> OperationResult<Contributor> {
         self.respond_to_contributor_invitation(context, invitation)
+            .into()
     }
 }

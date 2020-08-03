@@ -1,10 +1,8 @@
 use super::{Account, Context, Mutation};
-use anyhow::anyhow;
 use data::{accounts, emails, logins};
 use diesel::dsl::*;
 use diesel::prelude::*;
 use diesel_citext::prelude::*;
-use juniper::FieldResult;
 
 #[derive(juniper::GraphQLInputObject)]
 pub struct CreateAccount {
@@ -18,31 +16,32 @@ impl Mutation {
         &self,
         context: &Context,
         account: CreateAccount,
-    ) -> FieldResult<Account> {
+    ) -> anyhow::Result<Account> {
         let (account, email, login) = context.transaction(|conn| {
             let name = CiString::from(account.name.as_str());
             let address = CiString::from(account.email.as_str());
+
             let is_active = emails::verified_at
                 .is_not_null()
                 .or(emails::protected_until.gt(now));
             let matching_email = emails::table
                 .filter(emails::address.eq(&address))
                 .filter(is_active);
-            let email_exists = select(exists(matching_email)).get_result(conn)?;
-            if email_exists {
-                return Err(anyhow!(
-                    "An account with this email ({}) already exists.",
-                    &account.email
-                ));
-            }
-            let name_exists = select(exists(accounts::table.filter(accounts::name.eq(&name))))
-                .get_result(conn)?;
-            if name_exists {
-                return Err(anyhow!(
-                    "An account with this name ({}) already exists.",
-                    &account.name
-                ));
-            }
+            let email_exists: bool = select(exists(matching_email)).get_result(conn)?;
+            anyhow::ensure!(
+                !email_exists,
+                "An account with this email ({}) already exists.",
+                &account.email
+            );
+
+            let name_exists: bool =
+                select(exists(accounts::table.filter(accounts::name.eq(&name))))
+                    .get_result(conn)?;
+            anyhow::ensure!(
+                !name_exists,
+                "An account with this name ({}) already exists.",
+                &account.name
+            );
 
             let hashed_password = bcrypt::hash(&account.password, bcrypt::DEFAULT_COST)?;
 

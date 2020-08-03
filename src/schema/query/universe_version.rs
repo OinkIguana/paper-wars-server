@@ -1,4 +1,4 @@
-use super::{ArchetypeVersion, Context, MapVersion, QueryWrapper};
+use super::{ArchetypeVersion, Context, MapVersion, OperationResult, QueryWrapper};
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use juniper::FieldResult;
@@ -89,5 +89,16 @@ impl UniverseVersion {
             .into_iter()
             .map(|version| MapVersion::new(version.map_id, version.map_version))
             .collect())
+    }
+}
+
+#[juniper::graphql_object(Context = Context, name = "UniverseVersionResult")]
+impl OperationResult<UniverseVersion> {
+    pub fn success(&self) -> Option<&UniverseVersion> {
+        self.success()
+    }
+
+    pub fn error(&self) -> Option<String> {
+        self.error()
     }
 }

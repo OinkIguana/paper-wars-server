@@ -7,7 +7,6 @@ use data::{
 use diesel::dsl::*;
 use diesel::prelude::*;
 use diesel_citext::prelude::*;
-use juniper::FieldResult;
 use uuid::Uuid;
 
 #[derive(juniper::GraphQLInputObject)]
@@ -31,19 +30,18 @@ impl Mutation {
         &self,
         context: &Context,
         universe: CreateUniverse,
-    ) -> FieldResult<Universe> {
+    ) -> anyhow::Result<Universe> {
         let account_id = context.try_authenticated_account()?;
         let (universe, contributor) = context.transaction(|conn| {
             let name = CiString::from(universe.name.as_str());
-            let universe_exists =
+            let universe_exists: bool =
                 select(exists(universes::table.filter(universes::name.eq(&name))))
                     .get_result(conn)?;
-            if universe_exists {
-                return Err(anyhow!(
-                    "A universe with this name ({}) already exists",
-                    &universe.name,
-                ));
-            }
+            anyhow::ensure!(
+                !universe_exists,
+                "A universe with this name ({}) already exists",
+                &universe.name,
+            );
 
             let universe: data::Universe = insert_into(universes::table)
                 .values(universes::name.eq(&name))
@@ -70,20 +68,20 @@ impl Mutation {
         &self,
         context: &Context,
         universe: CreateUniverseVersion,
-    ) -> FieldResult<UniverseVersion> {
+    ) -> anyhow::Result<UniverseVersion> {
         let account_id = context.try_authenticated_account()?;
         let universe_version = context.transaction(|conn| {
             self.assert_universe_owner(context, universe.id, account_id)?;
             let unreleased_version = universe_versions::table
                 .filter(universe_versions::universe_id.eq(universe.id))
                 .filter(universe_versions::released_at.is_null());
-            let unreleased_version_exists = select(exists(unreleased_version)).get_result(conn)?;
-            if unreleased_version_exists {
-                return Err(anyhow!(
-                    "There is already an unreleased version of this universe ({})",
-                    universe.id,
-                ));
-            }
+            let unreleased_version_exists: bool =
+                select(exists(unreleased_version)).get_result(conn)?;
+            anyhow::ensure!(
+                !unreleased_version_exists,
+                "There is already an unreleased version of this universe ({})",
+                universe.id,
+            );
 
             let versions = universe_versions::table
                 .select(count(universe_versions::star))
@@ -130,7 +128,7 @@ impl Mutation {
         &self,
         context: &Context,
         universe: ReleaseUniverseVersion,
-    ) -> FieldResult<UniverseVersion> {
+    ) -> anyhow::Result<UniverseVersion> {
         let account_id = context.try_authenticated_account()?;
         let universe_version = context.transaction(|conn| {
             self.assert_universe_owner(context, universe.id, account_id)?;
@@ -144,13 +142,12 @@ impl Mutation {
                         universe.version,
                     )
                 })?;
-            if universe_version.released_at.is_some() {
-                return Err(anyhow!(
-                    "Universe {} version {} has already been released",
-                    universe.id,
-                    universe.version,
-                ));
-            }
+            anyhow::ensure!(
+                universe_version.released_at.is_none(),
+                "Universe {} version {} has already been released",
+                universe.id,
+                universe.version,
+            );
             universe_version.released_at = update(&universe_version)
                 .set(universe_versions::released_at.eq(now))
                 .returning(universe_versions::released_at)
