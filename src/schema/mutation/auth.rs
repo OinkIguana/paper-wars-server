@@ -15,34 +15,39 @@ impl Mutation {
     pub(super) fn authenticate(
         &self,
         context: &Context,
-        credentials: Credentials,
+        credentials: Option<Credentials>,
+        token: Option<String>,
     ) -> FieldResult<String> {
-        let login = match (credentials.name, credentials.email) {
-            (None, None) | (Some(_), Some(_)) => {
-                return Err(anyhow!("Exactly one of name or email must be supplied").into())
+        let account = if let Some(credentials) = credentials {
+            let login = match (credentials.name, credentials.email) {
+                (None, None) | (Some(_), Some(_)) => {
+                    return Err(anyhow!("Exactly one of name or email must be supplied").into())
+                }
+                (Some(name), _) => context.logins().for_account_with_name(&name)?,
+                (_, Some(email)) => context.logins().by_email_address(&email)?,
+            };
+            let login = login.ok_or_else(|| anyhow!("Account was not found"))?;
+            if bcrypt::verify(credentials.password, &login.password)? {
+                context.accounts().load(login.account_id).unwrap()
+            } else {
+                return Err(anyhow!("Incorrect password").into())
             }
-            (Some(name), _) => context.logins().for_account_with_name(&name)?,
-            (_, Some(email)) => context.logins().by_email_address(&email)?,
-        };
-        let login = login.ok_or_else(|| anyhow!("Account was not found"))?;
-        if bcrypt::verify(credentials.password, &login.password)? {
-            let account = context.accounts().load(login.account_id).unwrap();
-            Ok(jwt::encode(account)?)
         } else {
-            Err(anyhow!("Incorrect password").into())
-        }
-    }
-
-    /// When already signed in, renew the auth token to extend its expiry.
-    pub(super) fn renew_authentication(
-        &self,
-        context: &Context,
-    ) -> FieldResult<Option<String>> {
-        let account_id = match context.authenticated_account() {
-            Some(account_id) => account_id,
-            None => return Ok(None),
+            let account_id = if let Some(token) = token {
+                jwt::decode(&token)?
+            } else {
+                context
+                    .authenticated_account()
+                    .ok_or(anyhow!("No credentials were supplied"))?
+            };
+            context
+                .accounts()
+                .load(account_id)
+                .ok_or(anyhow!("This account no longer exists"))?
         };
-        let account = context.accounts().load(account_id).unwrap();
-        Ok(Some(jwt::encode(account)?))
+        let account_id = account.id;
+        let token = jwt::encode(account)?;
+        context.set_authenticated_account(account_id);
+        Ok(token)
     }
 }

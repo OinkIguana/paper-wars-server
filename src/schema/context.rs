@@ -2,10 +2,11 @@ use super::{Database, Loader};
 use anyhow::anyhow;
 use data::*;
 use diesel_citext::types::CiString;
+use std::sync::{Arc, RwLock};
 use uuid::Uuid;
 
 pub struct Context {
-    authenticated_account: Option<Uuid>,
+    authenticated_account: Arc<RwLock<Option<Uuid>>>,
     account_loader: Loader<Uuid, Account>,
     archetype_loader: Loader<Uuid, Archetype>,
     archetype_version_loader: Loader<(Uuid, i32), ArchetypeVersion>,
@@ -27,7 +28,7 @@ pub struct Context {
 impl Context {
     pub fn new(database: Database, authenticated_account: Option<Uuid>) -> Self {
         Self {
-            authenticated_account,
+            authenticated_account: Arc::new(RwLock::new(authenticated_account)),
             account_loader: Loader::new(database.clone()),
             archetype_loader: Loader::new(database.clone()),
             archetype_version_loader: Loader::new(database.clone()),
@@ -58,11 +59,21 @@ impl Context {
 
     pub fn try_authenticated_account(&self) -> anyhow::Result<Uuid> {
         self.authenticated_account
+            .read()
+            .unwrap()
             .ok_or(anyhow!("You must be signed in to do this."))
     }
 
     pub fn authenticated_account(&self) -> Option<Uuid> {
-        self.authenticated_account
+        *self.authenticated_account
+            .read()
+            .unwrap()
+    }
+
+    pub fn set_authenticated_account(&self, account_id: Uuid) {
+        *self.authenticated_account
+            .write()
+            .unwrap() = Some(account_id);
     }
 
     pub fn accounts(&self) -> &Loader<Uuid, Account> {

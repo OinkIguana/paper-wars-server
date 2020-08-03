@@ -18,14 +18,10 @@ impl Mutation {
     fn authenticate(
         &self,
         context: &Context,
-        credentials: auth::Credentials,
+        credentials: Option<auth::Credentials>,
+        token: Option<String>,
     ) -> FieldResult<String> {
-        self.authenticate(context, credentials)
-    }
-
-    /// When already signed in, renew the auth token to extend its expiry.
-    fn renew_authentication(&self, context: &Context) -> FieldResult<Option<String>> {
-        self.renew_authentication(context)
+        self.authenticate(context, credentials, token)
     }
 
     // -- Accounts --
@@ -46,10 +42,20 @@ impl Mutation {
         &self,
         context: &Context,
         universe: universe::CreateUniverse,
-    ) -> FieldResult<UniverseVersion> {
+    ) -> FieldResult<Universe> {
         self.create_universe(context, universe)
     }
 
+    /// Create a new version of an existing universe. If a previously unreleased version already exists, this will fail.
+    fn create_universe_version(
+        &self,
+        context: &Context,
+        universe: universe::CreateUniverseVersion,
+    ) -> FieldResult<UniverseVersion> {
+        self.create_universe_version(context, universe)
+    }
+
+    /// Release the current unreleased version of a universe. If no unreleased version exists, this will fail.
     fn release_universe_version(
         &self,
         context: &Context,
