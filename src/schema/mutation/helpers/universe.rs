@@ -22,4 +22,24 @@ impl Mutation {
         );
         Ok(())
     }
+
+    pub fn assert_universe_contributor(
+        &self,
+        context: &Context,
+        universe_id: Uuid,
+        account_id: Uuid,
+    ) -> anyhow::Result<()> {
+        let is_contributor = context
+            .contributors()
+            .load((universe_id, account_id))
+            .map(|relationship| relationship.role.can_contribute())
+            .unwrap_or(false);
+        anyhow::ensure!(
+            is_contributor,
+            "You ({}) are not a contributor to this universe ({})",
+            account_id,
+            universe_id,
+        );
+        Ok(())
+    }
 }

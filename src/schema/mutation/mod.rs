@@ -4,6 +4,7 @@ use juniper::FieldResult;
 mod helpers;
 
 mod account;
+mod archetype;
 mod auth;
 mod contributor;
 mod universe;
@@ -83,5 +84,25 @@ impl Mutation {
     ) -> OperationResult<Contributor> {
         self.respond_to_contributor_invitation(context, invitation)
             .into()
+    }
+
+    // -- Archetypes --
+
+    /// Create a new archetype.
+    fn create_archetype(
+        &self,
+        context: &Context,
+        archetype: archetype::CreateArchetype,
+    ) -> OperationResult<Archetype> {
+        self.create_archetype(context, archetype).into()
+    }
+
+    /// Create a new version of an archetype.
+    fn create_archetype_version(
+        &self,
+        context: &Context,
+        archetype: archetype::CreateArchetypeVersion,
+    ) -> OperationResult<ArchetypeVersion> {
+        self.create_archetype_version(context, archetype).into()
     }
 }

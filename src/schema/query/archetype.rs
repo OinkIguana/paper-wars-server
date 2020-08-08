@@ -1,4 +1,4 @@
-use super::{ArchetypeVersion, Context, QueryWrapper};
+use super::{ArchetypeVersion, Context, OperationResult, QueryWrapper};
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use juniper::FieldResult;
@@ -52,3 +52,13 @@ impl Archetype {
     }
 }
 
+#[juniper::graphql_object(Context = Context, name = "ArchetypeResult")]
+impl OperationResult<Archetype> {
+    pub fn success(&self) -> Option<&Archetype> {
+        self.success()
+    }
+
+    pub fn error(&self) -> Option<String> {
+        self.error()
+    }
+}
