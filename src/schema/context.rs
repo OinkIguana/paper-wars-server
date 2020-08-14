@@ -65,15 +65,11 @@ impl Context {
     }
 
     pub fn authenticated_account(&self) -> Option<Uuid> {
-        *self.authenticated_account
-            .read()
-            .unwrap()
+        *self.authenticated_account.read().unwrap()
     }
 
     pub fn set_authenticated_account(&self, account_id: Uuid) {
-        *self.authenticated_account
-            .write()
-            .unwrap() = Some(account_id);
+        *self.authenticated_account.write().unwrap() = Some(account_id);
     }
 
     pub fn accounts(&self) -> &Loader<Uuid, Account> {

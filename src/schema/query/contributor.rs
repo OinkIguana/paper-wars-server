@@ -1,4 +1,4 @@
-use super::{Account, Context, QueryWrapper, Universe, Pagination, OperationResult};
+use super::{Account, Context, OperationResult, Pagination, QueryWrapper, Universe};
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use data::ContributorRole;

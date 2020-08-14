@@ -47,8 +47,7 @@ where
             None => return Ok(None),
         };
         Ok(Some(
-            item.load(context)?
-                .cursor(&self.search, self.items.len()),
+            item.load(context)?.cursor(&self.search, self.items.len()),
         ))
     }
 }

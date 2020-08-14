@@ -24,7 +24,7 @@ impl Mutation {
     ) -> anyhow::Result<Contributor> {
         let account_id = context.try_authenticated_account()?;
         let invitation = context.transaction(|conn| {
-            self.assert_universe_owner(context, contributor.universe_id, account_id)?;
+            self.assert_universe_owner(contributor.universe_id, account_id, conn)?;
             let existing_contributor = contributors::table
                 .filter(contributors::account_id.eq(contributor.account_id))
                 .filter(contributors::universe_id.eq(contributor.universe_id))
@@ -55,21 +55,26 @@ impl Mutation {
     pub(super) fn respond_to_contributor_invitation(
         &self,
         context: &Context,
-        invitation: RespondToContributorInvitation,
+        RespondToContributorInvitation {
+            universe_id,
+            accepted,
+        }: RespondToContributorInvitation,
     ) -> anyhow::Result<Contributor> {
         let account_id = context.try_authenticated_account()?;
         let contributor = context.transaction(|conn| {
-            let mut contributor = context
-                .contributors()
-                .load((invitation.universe_id, account_id))
-                .ok_or_else(|| {
+            let mut contributor: data::Contributor = contributors::table
+                .filter(contributors::universe_id.eq(universe_id))
+                .filter(contributors::account_id.eq(account_id))
+                .filter(contributors::role.eq(ContributorRole::Pending))
+                .get_result(conn)
+                .map_err(|_| {
                     anyhow::anyhow!(
                         "You ({}) havenot been invited to contribute to this universe ({}).",
                         account_id,
-                        invitation.universe_id
+                        universe_id
                     )
                 })?;
-            contributor.role = if invitation.accepted {
+            contributor.role = if accepted {
                 ContributorRole::Contributor
             } else {
                 ContributorRole::Declined

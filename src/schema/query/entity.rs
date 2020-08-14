@@ -23,11 +23,7 @@ impl Entity {
         Self { id }
     }
 
-    fn load_game(
-        &self,
-        context: &Context,
-        entity: &data::Entity,
-    ) -> anyhow::Result<data::Game> {
+    fn load_game(&self, context: &Context, entity: &data::Entity) -> anyhow::Result<data::Game> {
         context
             .games()
             .load(entity.game_id)

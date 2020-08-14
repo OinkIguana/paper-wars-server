@@ -43,26 +43,26 @@ impl Mutation {
         &self,
         context: &Context,
         universe: universe::CreateUniverse,
-    ) -> OperationResult<Universe> {
+    ) -> OperationResult<UniverseVersion> {
         self.create_universe(context, universe).into()
     }
 
-    /// Create a new version of an existing universe. If a previously unreleased version already exists, this will fail.
-    fn create_universe_version(
+    /// Update the archetypes or maps included in the universe.
+    fn update_universe(
         &self,
         context: &Context,
-        universe: universe::CreateUniverseVersion,
+        universe: universe::UpdateUniverse,
     ) -> OperationResult<UniverseVersion> {
-        self.create_universe_version(context, universe).into()
+        self.update_universe(context, universe).into()
     }
 
     /// Release the current unreleased version of a universe. If no unreleased version exists, this will fail.
-    fn release_universe_version(
+    fn publish_universe(
         &self,
         context: &Context,
-        universe: universe::ReleaseUniverseVersion,
+        universe: universe::PublishUniverse,
     ) -> OperationResult<UniverseVersion> {
-        self.release_universe_version(context, universe).into()
+        self.publish_universe(context, universe).into()
     }
 
     // -- Contributors --
@@ -93,16 +93,16 @@ impl Mutation {
         &self,
         context: &Context,
         archetype: archetype::CreateArchetype,
-    ) -> OperationResult<Archetype> {
+    ) -> OperationResult<ArchetypeVersion> {
         self.create_archetype(context, archetype).into()
     }
 
-    /// Create a new version of an archetype.
-    fn create_archetype_version(
+    /// Update an existing archetype.
+    fn update_archetype(
         &self,
         context: &Context,
-        archetype: archetype::CreateArchetypeVersion,
+        archetype: archetype::UpdateArchetype,
     ) -> OperationResult<ArchetypeVersion> {
-        self.create_archetype_version(context, archetype).into()
+        self.update_archetype(context, archetype).into()
     }
 }
