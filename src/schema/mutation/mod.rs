@@ -7,6 +7,7 @@ mod account;
 mod archetype;
 mod auth;
 mod contributor;
+mod email;
 mod map;
 mod universe;
 
@@ -35,6 +36,30 @@ impl Mutation {
         account: account::CreateAccount,
     ) -> OperationResult<Account> {
         self.create_account(context, account).into()
+    }
+
+    /// Update an existing account.
+    fn update_account(
+        &self,
+        context: &Context,
+        account: account::UpdateAccount,
+    ) -> OperationResult<Account> {
+        self.update_account(context, account).into()
+    }
+
+    /// Add an email to the account.
+    fn add_email(&self, context: &Context, email: email::AddEmail) -> OperationResult<Email> {
+        self.add_email(context, email).into()
+    }
+
+    /// Remove an email from the account.
+    fn remove_email(&self, context: &Context, email: email::RemoveEmail) -> OperationResult<bool> {
+        self.remove_email(context, email).map(|()| true).into()
+    }
+
+    /// Verify an email address.
+    fn verify_email(&self, context: &Context, email: email::VerifyEmail) -> OperationResult<Email> {
+        self.verify_email(context, email).into()
     }
 
     // -- Universes --

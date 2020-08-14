@@ -11,15 +11,26 @@ pub struct CreateAccount {
     password: String,
 }
 
+#[derive(juniper::GraphQLInputObject)]
+pub struct UpdateAccount {
+    name: Option<String>,
+    password: Option<String>,
+    primary_email: Option<String>,
+}
+
 impl Mutation {
     pub(super) fn create_account(
         &self,
         context: &Context,
-        account: CreateAccount,
+        CreateAccount {
+            name,
+            email,
+            password,
+        }: CreateAccount,
     ) -> anyhow::Result<Account> {
         let (account, email, login) = context.transaction(|conn| {
-            let name = CiString::from(account.name.as_str());
-            let address = CiString::from(account.email.as_str());
+            let name = CiString::from(name.as_str());
+            let address = CiString::from(email.as_str());
 
             let is_active = emails::verified_at
                 .is_not_null()
@@ -31,7 +42,7 @@ impl Mutation {
             anyhow::ensure!(
                 !email_exists,
                 "An account with this email ({}) already exists.",
-                &account.email
+                &email
             );
 
             let name_exists: bool =
@@ -40,10 +51,10 @@ impl Mutation {
             anyhow::ensure!(
                 !name_exists,
                 "An account with this name ({}) already exists.",
-                &account.name
+                &name
             );
 
-            let hashed_password = bcrypt::hash(&account.password, bcrypt::DEFAULT_COST)?;
+            let hashed_password = bcrypt::hash(&password, bcrypt::DEFAULT_COST)?;
 
             let account: data::Account = insert_into(accounts::table)
                 .values(accounts::name.eq(&name))
@@ -71,6 +82,47 @@ impl Mutation {
         context.accounts().prime(account);
         context.emails().prime(email);
         context.logins().prime(login);
+        Ok(query)
+    }
+
+    pub(super) fn update_account(
+        &self,
+        context: &Context,
+        UpdateAccount {
+            name,
+            password,
+            primary_email,
+        }: UpdateAccount,
+    ) -> anyhow::Result<Account> {
+        let account_id = context.try_authenticated_account()?;
+        let account: data::Account = context.transaction(|conn| {
+            if let Some(name) = name {
+                update(accounts::table)
+                    .set(accounts::name.eq(CiString::from(name)))
+                    .filter(accounts::id.eq(account_id))
+                    .execute(conn)?;
+            }
+
+            if let Some(password) = password {
+                let hashed_password = bcrypt::hash(&password, bcrypt::DEFAULT_COST)?;
+                update(logins::table)
+                    .set(logins::password.eq(hashed_password))
+                    .filter(logins::account_id.eq(account_id))
+                    .execute(conn)?;
+            }
+
+            if let Some(primary_email) = primary_email {
+                update(logins::table)
+                    .set(logins::email_address.eq(CiString::from(primary_email)))
+                    .filter(logins::account_id.eq(account_id))
+                    .execute(conn)?;
+            }
+
+            Ok(accounts::table.find(account_id).get_result(conn)?)
+        })?;
+
+        let query = Account::new(account.id);
+        context.accounts().prime(account);
         Ok(query)
     }
 }

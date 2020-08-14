@@ -1,4 +1,4 @@
-use super::{Context, QueryWrapper};
+use super::{Context, OperationResult, QueryWrapper};
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use diesel_citext::types::CiString;
@@ -57,5 +57,16 @@ impl Email {
             .load(account_id)
             .map(|login| login.email_address == self.address)
             .unwrap_or(false))
+    }
+}
+
+#[juniper::graphql_object(Context = Context, name = "EmailResult")]
+impl OperationResult<Email> {
+    pub fn success(&self) -> Option<&Email> {
+        self.success()
+    }
+
+    pub fn error(&self) -> Option<String> {
+        self.error()
     }
 }
