@@ -7,6 +7,7 @@ mod account;
 mod archetype;
 mod auth;
 mod contributor;
+mod map;
 mod universe;
 
 pub struct Mutation;
@@ -104,5 +105,17 @@ impl Mutation {
         archetype: archetype::UpdateArchetype,
     ) -> OperationResult<ArchetypeVersion> {
         self.update_archetype(context, archetype).into()
+    }
+
+    // -- Maps --
+
+    /// Create a new map.
+    fn create_map(&self, context: &Context, map: map::CreateMap) -> OperationResult<MapVersion> {
+        self.create_map(context, map).into()
+    }
+
+    /// Update an existing map.
+    fn update_map(&self, context: &Context, map: map::UpdateMap) -> OperationResult<MapVersion> {
+        self.update_map(context, map).into()
     }
 }

@@ -1,4 +1,4 @@
-use super::{Context, QueryWrapper};
+use super::{Context, OperationResult, QueryWrapper};
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use juniper::FieldResult;
@@ -64,5 +64,16 @@ impl MapVersion {
     /// When this version was created.
     fn created_at(&self, context: &Context) -> FieldResult<DateTime<Utc>> {
         Ok(self.load(context)?.created_at)
+    }
+}
+
+#[juniper::graphql_object(Context = Context, name = "MapVersionResult")]
+impl OperationResult<MapVersion> {
+    pub fn success(&self) -> Option<&MapVersion> {
+        self.success()
+    }
+
+    pub fn error(&self) -> Option<String> {
+        self.error()
     }
 }
