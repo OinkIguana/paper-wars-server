@@ -5,6 +5,5 @@ use uuid::Uuid;
 batch_fn!(players => Player { game_id: Uuid, account_id: Uuid });
 
 impl Loader<(Uuid, Uuid), Player> {
-    join!(players => for_account(account_id: Uuid) -> Player);
     join!(players => for_game(game_id: Uuid) -> Player);
 }

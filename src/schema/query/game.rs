@@ -1,4 +1,6 @@
-use super::{Context, Entity, MapVersion, OperationResult, Player, QueryWrapper, UniverseVersion};
+use super::{
+    Context, Entity, MapVersion, OperationResult, Pagination, Player, QueryWrapper, UniverseVersion,
+};
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use juniper::FieldResult;
@@ -103,6 +105,25 @@ impl Game {
             .into_iter()
             .map(|entity| Entity::new(entity.id))
             .collect())
+    }
+}
+
+#[juniper::graphql_object(Context = Context, name = "GamePagination")]
+impl Pagination<Game> {
+    fn items(&self) -> &[Game] {
+        self.items()
+    }
+
+    fn total(&self) -> i32 {
+        self.total()
+    }
+
+    fn start(&self, context: &Context) -> juniper::FieldResult<Option<String>> {
+        self.start(context)
+    }
+
+    fn end(&self, context: &Context) -> juniper::FieldResult<Option<String>> {
+        self.end(context)
     }
 }
 

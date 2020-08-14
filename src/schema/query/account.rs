@@ -69,13 +69,18 @@ impl Account {
     }
 
     /// Games that this person is playing.
-    fn games(&self, context: &Context) -> FieldResult<Vec<Game>> {
-        Ok(context
-            .players()
-            .for_account(&self.load(context)?.id)
+    fn games(
+        &self,
+        context: &Context,
+        search: Option<data::PlayerSearch>,
+    ) -> FieldResult<Pagination<Game>> {
+        let search = data::GameSearch::from_player_search(self.id, search.unwrap_or_default());
+        let items = context
+            .games()
+            .search(&search)?
             .into_iter()
-            .map(|player| Game::new(player.game_id))
-            .collect())
+            .map(|game| Game::new(game.id));
+        Ok(Pagination::new(search, items))
     }
 }
 
