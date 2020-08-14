@@ -1,5 +1,6 @@
 use super::{Context, QueryWrapper};
 use anyhow::anyhow;
+use data::PlayerEngagement;
 use juniper::FieldResult;
 use uuid::Uuid;
 
@@ -56,6 +57,11 @@ impl Player {
     /// The place this player's turn occurs in the order of the game.
     fn turn_order(&self, context: &Context) -> FieldResult<i32> {
         Ok(self.load(context)?.turn_order)
+    }
+
+    /// The player's current engagement with this game.
+    fn engagement(&self, context: &Context) -> FieldResult<PlayerEngagement> {
+        Ok(self.load(context)?.engagement)
     }
 
     /// The game state that is specific to this player.
