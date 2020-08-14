@@ -1,4 +1,4 @@
-use super::{Context, Entity, MapVersion, Player, QueryWrapper, UniverseVersion};
+use super::{Context, Entity, MapVersion, OperationResult, Player, QueryWrapper, UniverseVersion};
 use anyhow::anyhow;
 use chrono::{DateTime, Utc};
 use juniper::FieldResult;
@@ -103,5 +103,16 @@ impl Game {
             .into_iter()
             .map(|entity| Entity::new(entity.id))
             .collect())
+    }
+}
+
+#[juniper::graphql_object(Context = Context, name = "GameResult")]
+impl OperationResult<Game> {
+    pub fn success(&self) -> Option<&Game> {
+        self.success()
+    }
+
+    pub fn error(&self) -> Option<String> {
+        self.error()
     }
 }
