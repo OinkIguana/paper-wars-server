@@ -8,6 +8,7 @@ mod archetype;
 mod auth;
 mod contributor;
 mod email;
+mod game;
 mod map;
 mod universe;
 
@@ -142,5 +143,10 @@ impl Mutation {
     /// Update an existing map.
     fn update_map(&self, context: &Context, map: map::UpdateMap) -> OperationResult<MapVersion> {
         self.update_map(context, map).into()
+    }
+
+    // -- Games --
+    fn create_game(&self, context: &Context, game: game::CreateGame) -> OperationResult<Game> {
+        self.create_game(context, game).into()
     }
 }
