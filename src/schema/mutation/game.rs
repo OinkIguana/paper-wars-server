@@ -13,6 +13,11 @@ pub struct CreateGame {
     players: Vec<Uuid>,
 }
 
+#[derive(juniper::GraphQLInputObject)]
+pub struct GameInvitation {
+    id: Uuid,
+}
+
 impl Mutation {
     pub(super) fn create_game(
         &self,
@@ -90,6 +95,40 @@ impl Mutation {
                     ))
                     .execute(conn)?;
             }
+            Ok(game)
+        })?;
+
+        let query = Game::new(game.id);
+        context.games().prime(game);
+        Ok(query)
+    }
+
+    pub(super) fn respond_to_game_invitation(
+        &self,
+        context: &Context,
+        GameInvitation { id }: GameInvitation,
+        accepted: bool,
+    ) -> anyhow::Result<Game> {
+        let account_id = context.try_authenticated_account()?;
+        let game = context.transaction(|conn| {
+            let player: data::Player = players::table
+                .filter(players::account_id.eq(account_id))
+                .filter(players::game_id.eq(id))
+                .get_result(conn)?;
+            anyhow::ensure!(
+                player.engagement == PlayerEngagement::Pending,
+                "You have already responded to this invitation",
+            );
+            let engagement = if accepted {
+                PlayerEngagement::Player
+            } else {
+                PlayerEngagement::Declined
+            };
+            update(&player)
+                .set(players::engagement.eq(engagement))
+                .execute(conn)?;
+
+            let game: data::Game = games::table.find(id).get_result(conn)?;
             Ok(game)
         })?;
 

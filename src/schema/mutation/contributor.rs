@@ -11,9 +11,8 @@ pub struct InviteContributor {
 }
 
 #[derive(juniper::GraphQLInputObject)]
-pub struct RespondToContributorInvitation {
+pub struct ContributorInvitation {
     universe_id: Uuid,
-    accepted: bool,
 }
 
 impl Mutation {
@@ -55,10 +54,8 @@ impl Mutation {
     pub(super) fn respond_to_contributor_invitation(
         &self,
         context: &Context,
-        RespondToContributorInvitation {
-            universe_id,
-            accepted,
-        }: RespondToContributorInvitation,
+        ContributorInvitation { universe_id }: ContributorInvitation,
+        accepted: bool,
     ) -> anyhow::Result<Contributor> {
         let account_id = context.try_authenticated_account()?;
         let contributor = context.transaction(|conn| {

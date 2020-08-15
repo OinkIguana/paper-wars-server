@@ -103,13 +103,23 @@ impl Mutation {
         self.invite_contributor(context, contributor).into()
     }
 
-    /// Accept or reject an invitation to contribute to a universe.
-    fn respond_to_contributor_invitation(
+    /// Accept an invitation to contribute to a universe.
+    fn accept_contributor_invitation(
         &self,
         context: &Context,
-        invitation: contributor::RespondToContributorInvitation,
+        invitation: contributor::ContributorInvitation,
     ) -> OperationResult<Contributor> {
-        self.respond_to_contributor_invitation(context, invitation)
+        self.respond_to_contributor_invitation(context, invitation, true)
+            .into()
+    }
+
+    /// Reject an invitation to contribute to a universe.
+    fn reject_contributor_invitation(
+        &self,
+        context: &Context,
+        invitation: contributor::ContributorInvitation,
+    ) -> OperationResult<Contributor> {
+        self.respond_to_contributor_invitation(context, invitation, false)
             .into()
     }
 
@@ -146,7 +156,27 @@ impl Mutation {
     }
 
     // -- Games --
+
+    /// Create a new game and invite players to it.
     fn create_game(&self, context: &Context, game: game::CreateGame) -> OperationResult<Game> {
         self.create_game(context, game).into()
+    }
+
+    /// Accept an invitation to a game.
+    fn accept_game_invitation(
+        &self,
+        context: &Context,
+        game: game::GameInvitation,
+    ) -> OperationResult<Game> {
+        self.respond_to_game_invitation(context, game, true).into()
+    }
+
+    /// Reject an invitation to a game.
+    fn reject_game_invitation(
+        &self,
+        context: &Context,
+        game: game::GameInvitation,
+    ) -> OperationResult<Game> {
+        self.respond_to_game_invitation(context, game, false).into()
     }
 }
