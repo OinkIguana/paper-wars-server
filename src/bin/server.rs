@@ -6,11 +6,8 @@ use env_logger;
 use rocket::{response::content, State};
 use std::env;
 
-mod jwt;
-mod schema;
-
-use jwt::AuthenticatedAccount;
-use schema::{Context, Database, Schema};
+use lib::jwt::AuthenticatedAccount;
+use lib::schema::{Context, Database, Schema, self};
 
 #[rocket::get("/")]
 fn graphiql() -> content::Html<String> {

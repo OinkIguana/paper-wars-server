@@ -3,6 +3,11 @@ authors = ["Cameron Eldridge <cameldridge@gmail.com>"]
 edition = "2018"
 name = "server"
 version = "0.1.0"
+default-run = "server"
+
+[lib]
+name = "lib"
+
 [dependencies]
 anyhow = "1.0"
 async-trait = "0.1"
