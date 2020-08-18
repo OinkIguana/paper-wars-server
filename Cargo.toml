@@ -37,17 +37,17 @@ git = "https://github.com/diesel-rs/diesel"
 
 [dependencies.diesel-citext]
 git = "https://github.com/foxfriends/diesel-citext"
-rev = "914c3f3"
+branch = "master"
 
 [dependencies.juniper]
 branch = "master"
 default-features = false
 features = ["chrono", "uuid"]
-git = "https://github.com/foxfriends/juniper.git"
+git = "https://github.com/graphql-rust/juniper.git"
 
 [dependencies.juniper_rocket_async]
 branch = "master"
-git = "https://github.com/foxfriends/juniper.git"
+git = "https://github.com/graphql-rust/juniper.git"
 
 [dependencies.rocket]
 branch = "master"
@@ -56,9 +56,6 @@ git = "https://github.com/SergioBenitez/Rocket"
 [dependencies.serde]
 features = ["derive"]
 version = "1.0"
-
-[dependencies.shared]
-path = "../shared"
 
 [dependencies.tokio]
 default-features = false
