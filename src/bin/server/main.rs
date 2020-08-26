@@ -1,6 +1,9 @@
 #[macro_use]
 extern crate rocket;
 
+mod fairing;
+use fairing::Cors;
+
 use dotenv;
 use env_logger;
 use rocket::{response::content, State};
@@ -51,6 +54,7 @@ async fn main() {
     let database_url = env::var("DATABASE_URL").unwrap();
 
     rocket::ignite()
+        .attach(Cors)
         .manage(Database::connect(database_url).unwrap())
         .manage(schema::create())
         .mount(
